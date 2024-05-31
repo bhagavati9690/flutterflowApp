@@ -11,20 +11,27 @@ class VenueDetailsModel extends FlutterFlowModel<VenueDetailsWidget> {
 
   bool isVenueLike = true;
 
-  PhotoQueryStruct? photoQuery;
+  PhotoQueryStruct photoQuery =
+      PhotoQueryStruct.fromSerializableMap(jsonDecode('{}'));
   void updatePhotoQueryStruct(Function(PhotoQueryStruct) updateFn) =>
-      updateFn(photoQuery ??= PhotoQueryStruct());
+      updateFn(photoQuery);
 
   ///  State fields for stateful widgets in this page.
 
   final unfocusNode = FocusNode();
   // Stores action output result for [Backend Call - API (venueDetails)] action in VenueDetails widget.
   ApiCallResponse? apiResultVenueResult;
+  // Stores action output result for [Backend Call - API (venuePhoto)] action in VenueDetails widget.
+  ApiCallResponse? apiResultVenuePhoto;
+  // Stores action output result for [Backend Call - API (venuePackage)] action in VenueDetails widget.
+  ApiCallResponse? apiResultVenuePackage;
   // State field(s) for Expandable widget.
   late ExpandableController expandableExpandableController1;
 
   // State field(s) for RatingBar widget.
   double? ratingBarValue1;
+  // State field(s) for RatingBar widget.
+  double? ratingBarValue2;
   // State field(s) for TabBar widget.
   TabController? tabBarController;
   int get tabBarCurrentIndex =>
@@ -59,7 +66,7 @@ class VenueDetailsModel extends FlutterFlowModel<VenueDetailsWidget> {
   int carouselCurrentIndex = 1;
 
   // State field(s) for RatingBar widget.
-  double? ratingBarValue2;
+  double? ratingBarValue3;
 
   @override
   void initState(BuildContext context) {}

@@ -20,6 +20,7 @@ class VenuesGroup {
   static VenueDetailsCall venueDetailsCall = VenueDetailsCall();
   static VenuePhotoCall venuePhotoCall = VenuePhotoCall();
   static VenueSuggestionCall venueSuggestionCall = VenueSuggestionCall();
+  static VenuePackageCall venuePackageCall = VenuePackageCall();
 }
 
 class GetAllVenuesCall {
@@ -338,7 +339,7 @@ class VenueDetailsCall {
     return ApiManager.instance.makeApiCall(
       callName: 'venueDetails',
       apiUrl:
-          '$baseUrl/venueDetailsCursor/rec/$venueId?columns=resource.id,resource.basicPartyInfo.primaryContact.person.communication.phone,resource.basicPartyInfo.primaryContact.person.communication.email,resource.basicPartyInfo.primaryContact.person.fullName,cateringRates,cateringOption.name,resource.hasBookingCal,resource.bookingURL,resource.minBookingTimeframe.text,resource.resourceCosting.cancellationPolicy.text,resource.fullPaymentTimeframe.text,resource.creditCardAccepted,resource.paymentModes,resource.tertiaryAgeRange,resource.secondaryAgeRange,resource.primaryAgeRange,resource.additionalInfo.secondaryPreferredGender.name,resource.additionalInfo.primaryPreferredGender.name,venueType.name,resource.serviceDemographics.name,activityCategories,resource.additionalInfo.maxCapacityForGroup,resourceThemes,availDays,accomodates,sportsTypes,partyPlaceTypes,ageRange,resource.resourceItemPriceRane,activityTypes,resource.basicPartyInfo.busPartyIdentifier.description,resource.basicPartyInfo.address.addressInShort,resource.basicPartyInfo.communication.website,resource.basicPartyInfo.communication.email,resource.basicPartyInfo.communication.phone,getVenueCategory,resource.additionalInfo.overallRank,resource.basicPartyInfo.busPartyIdentifier.name,resource.basicPartyInfo.address.geometry&_dc=1716311060210',
+          '$baseUrl/venueDetailsCursor/rec/$venueId?columns=resource.id,resource.basicPartyInfo.primaryContact.person.communication.phone,resource.basicPartyInfo.primaryContact.person.communication.email,resource.basicPartyInfo.primaryContact.person.fullName,cateringRates,cateringOption.name,resource.hasBookingCal,resource.bookingURL,resource.minBookingTimeframe.text,resource.resourceCosting.cancellationPolicy.text,resource.fullPaymentTimeframe.text,resource.basicPartyInfo.busPartyIdentifier.longDescription,resource.creditCardAccepted,resource.paymentModes,resource.tertiaryAgeRange,resource.secondaryAgeRange,resource.primaryAgeRange,resource.additionalInfo.secondaryPreferredGender.name,resource.additionalInfo.primaryPreferredGender.name,venueType.name,resource.serviceDemographics.name,activityCategories,resource.additionalInfo.maxCapacityForGroup,resourceThemes,availDays,accomodates,sportsTypes,partyPlaceTypes,ageRange,resource.resourceItemPriceRane,activityTypes,resource.basicPartyInfo.busPartyIdentifier.description,resource.basicPartyInfo.address.addressInShort,resource.basicPartyInfo.communication.website,resource.basicPartyInfo.communication.email,resource.basicPartyInfo.communication.phone,getVenueCategory,resource.additionalInfo.overallRank,resource.basicPartyInfo.busPartyIdentifier.name,resource.basicPartyInfo.address.geometry&_dc=1716311060210',
       callType: ApiCallType.GET,
       headers: {},
       params: {},
@@ -462,6 +463,10 @@ class VenueDetailsCall {
         response,
         r'''$.details[:]['resource-_-basicPartyInfo-_-primaryContact-_-person-_-fullName']''',
       ));
+  String? longDescription(dynamic response) => castToType<String>(getJsonField(
+        response,
+        r'''$.details[:]['resource-_-basicPartyInfo-_-busPartyIdentifier-_-longDescription']''',
+      ));
 }
 
 class VenuePhotoCall {
@@ -551,6 +556,148 @@ class VenueSuggestionCall {
   List<String>? key(dynamic response) => (getJsonField(
         response,
         r'''$.details[:].key''',
+        true,
+      ) as List?)
+          ?.withoutNulls
+          .map((x) => castToType<String>(x))
+          .withoutNulls
+          .toList();
+  List<String>? id(dynamic response) => (getJsonField(
+        response,
+        r'''$.details[:]._id''',
+        true,
+      ) as List?)
+          ?.withoutNulls
+          .map((x) => castToType<String>(x))
+          .withoutNulls
+          .toList();
+}
+
+class VenuePackageCall {
+  Future<ApiCallResponse> call({
+    dynamic queryJson,
+  }) async {
+    final baseUrl = VenuesGroup.getBaseUrl();
+
+    final query = _serializeJson(queryJson);
+
+    return ApiManager.instance.makeApiCall(
+      callName: 'venuePackage',
+      apiUrl:
+          '$baseUrl/venuePackageCursor?columns=venue_package.packageRates,venue_package.venuePackageSection.resItemSection.name,venue_package.resourcePackage.resourceItem.name,venue_package.resourcePackage.resourceItem.description,formatedPrice,venue_package.resourceItemDuartionFormatted,venue_package.resourcePackage.defaultInvitee,venue_package.resourcePackage.resourceItem.ageRange,venue_package.resourcePackage.packagePrimaryActivity.activityType.name,imageURL&_dc=1716898640894&a%3AclientState=$query&page=1&start=0&limit=-1',
+      callType: ApiCallType.GET,
+      headers: {},
+      params: {},
+      returnBody: true,
+      encodeBodyUtf8: false,
+      decodeUtf8: false,
+      cache: false,
+      alwaysAllowBody: false,
+    );
+  }
+
+  List? details(dynamic response) => getJsonField(
+        response,
+        r'''$.details''',
+        true,
+      ) as List?;
+  int? totalCount(dynamic response) => castToType<int>(getJsonField(
+        response,
+        r'''$.totalCount''',
+      ));
+  List<String>? id(dynamic response) => (getJsonField(
+        response,
+        r'''$.details[:]._id''',
+        true,
+      ) as List?)
+          ?.withoutNulls
+          .map((x) => castToType<String>(x))
+          .withoutNulls
+          .toList();
+  List<String>? priceWithUnit(dynamic response) => (getJsonField(
+        response,
+        r'''$.details[:].formatedPrice''',
+        true,
+      ) as List?)
+          ?.withoutNulls
+          .map((x) => castToType<String>(x))
+          .withoutNulls
+          .toList();
+  List<String>? imageUrl(dynamic response) => (getJsonField(
+        response,
+        r'''$.details[:].imageURL''',
+        true,
+      ) as List?)
+          ?.withoutNulls
+          .map((x) => castToType<String>(x))
+          .withoutNulls
+          .toList();
+  List<String>? duration(dynamic response) => (getJsonField(
+        response,
+        r'''$.details[:]['venue_package-_-resourceItemDuartionFormatted']''',
+        true,
+      ) as List?)
+          ?.withoutNulls
+          .map((x) => castToType<String>(x))
+          .withoutNulls
+          .toList();
+  List<String>? name(dynamic response) => (getJsonField(
+        response,
+        r'''$.details[:]['venue_package-_-resourcePackage-_-resourceItem-_-name']''',
+        true,
+      ) as List?)
+          ?.withoutNulls
+          .map((x) => castToType<String>(x))
+          .withoutNulls
+          .toList();
+  List<String>? ctivityType(dynamic response) => (getJsonField(
+        response,
+        r'''$.details[:]['venue_package-_-resourcePackage-_-packagePrimaryActivity-_-activityType-_-name']''',
+        true,
+      ) as List?)
+          ?.withoutNulls
+          .map((x) => castToType<String>(x))
+          .withoutNulls
+          .toList();
+  List<String>? description(dynamic response) => (getJsonField(
+        response,
+        r'''$.details[:]['venue_package-_-resourcePackage-_-resourceItem-_-description']''',
+        true,
+      ) as List?)
+          ?.withoutNulls
+          .map((x) => castToType<String>(x))
+          .withoutNulls
+          .toList();
+  List<String>? rate(dynamic response) => (getJsonField(
+        response,
+        r'''$.details[:]['venue_package-_-packageRates']''',
+        true,
+      ) as List?)
+          ?.withoutNulls
+          .map((x) => castToType<String>(x))
+          .withoutNulls
+          .toList();
+  List<String>? resourceSection(dynamic response) => (getJsonField(
+        response,
+        r'''$.details[:]['venue_package-_-venuePackageSection-_-resItemSection-_-name']''',
+        true,
+      ) as List?)
+          ?.withoutNulls
+          .map((x) => castToType<String>(x))
+          .withoutNulls
+          .toList();
+  List<String>? defaultInvitee(dynamic response) => (getJsonField(
+        response,
+        r'''$.details[:]['venue_package-_-resourcePackage-_-defaultInvitee']''',
+        true,
+      ) as List?)
+          ?.withoutNulls
+          .map((x) => castToType<String>(x))
+          .withoutNulls
+          .toList();
+  List<String>? ageRange(dynamic response) => (getJsonField(
+        response,
+        r'''$.details[:]['venue_package-_-resourcePackage-_-resourceItem-_-ageRange']''',
         true,
       ) as List?)
           ?.withoutNulls
@@ -901,10 +1048,14 @@ class ApiPagingParams {
       'PagingParams(nextPageNumber: $nextPageNumber, numItems: $numItems, lastResponse: $lastResponse,)';
 }
 
+String _toEncodable(dynamic item) {
+  return item;
+}
+
 String _serializeList(List? list) {
   list ??= <String>[];
   try {
-    return json.encode(list);
+    return json.encode(list, toEncodable: _toEncodable);
   } catch (_) {
     if (kDebugMode) {
       print("List serialization failed. Returning empty list.");
@@ -916,7 +1067,7 @@ String _serializeList(List? list) {
 String _serializeJson(dynamic jsonVar, [bool isList = false]) {
   jsonVar ??= (isList ? [] : {});
   try {
-    return json.encode(jsonVar);
+    return json.encode(jsonVar, toEncodable: _toEncodable);
   } catch (_) {
     if (kDebugMode) {
       print("Json serialization failed. Returning empty json.");

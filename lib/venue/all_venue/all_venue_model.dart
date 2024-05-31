@@ -140,8 +140,10 @@ class AllVenueModel extends FlutterFlowModel<AllVenueWidget> {
 
   final unfocusNode = FocusNode();
   // State field(s) for SearchField widget.
+  final searchFieldKey = GlobalKey();
   FocusNode? searchFieldFocusNode;
   TextEditingController? searchFieldTextController;
+  String? searchFieldSelectedOption;
   String? Function(BuildContext, String?)? searchFieldTextControllerValidator;
   Completer<ApiCallResponse>? apiRequestCompleter2;
   // Stores action output result for [Alert Dialog - Custom Dialog] action in Button widget.
@@ -165,7 +167,6 @@ class AllVenueModel extends FlutterFlowModel<AllVenueWidget> {
   void dispose() {
     unfocusNode.dispose();
     searchFieldFocusNode?.dispose();
-    searchFieldTextController?.dispose();
 
     venueListViewPagingController?.dispose();
   }

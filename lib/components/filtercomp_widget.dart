@@ -44,7 +44,7 @@ class _FiltercompWidgetState extends State<FiltercompWidget> {
       width: double.infinity,
       height: double.infinity,
       decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).primaryText,
+        color: FlutterFlowTheme.of(context).secondaryBackground,
       ),
       child: Stack(
         children: [
@@ -52,7 +52,7 @@ class _FiltercompWidgetState extends State<FiltercompWidget> {
             width: double.infinity,
             height: double.infinity,
             decoration: BoxDecoration(
-              color: FlutterFlowTheme.of(context).primaryText,
+              color: FlutterFlowTheme.of(context).secondaryBackground,
             ),
             child: Padding(
               padding: const EdgeInsetsDirectional.fromSTEB(45.0, 20.0, 0.0, 0.0),
@@ -73,15 +73,15 @@ class _FiltercompWidgetState extends State<FiltercompWidget> {
                       children: [
                         Text(
                           'Distance',
-                          style:
-                              FlutterFlowTheme.of(context).labelLarge.override(
-                                    fontFamily: 'Readex Pro',
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryBackground,
-                                    fontSize: 16.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.normal,
-                                  ),
+                          style: FlutterFlowTheme.of(context)
+                              .labelLarge
+                              .override(
+                                fontFamily: 'Readex Pro',
+                                color: FlutterFlowTheme.of(context).primaryText,
+                                fontSize: 16.0,
+                                letterSpacing: 0.0,
+                                fontWeight: FontWeight.normal,
+                              ),
                         ),
                         FlutterFlowRadioButton(
                           options: [
@@ -98,44 +98,30 @@ class _FiltercompWidgetState extends State<FiltercompWidget> {
                               _model.distanceSelectionValueController ??=
                                   FormFieldController<String>('25 Mile'),
                           optionHeight: 25.0,
-                          textStyle:
-                              FlutterFlowTheme.of(context).bodySmall.override(
-                                    fontFamily: 'Readex Pro',
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryBackground,
-                                    fontSize: 14.0,
-                                    letterSpacing: 0.0,
-                                  ),
-                          selectedTextStyle:
-                              FlutterFlowTheme.of(context).bodyLarge.override(
-                                    fontFamily: 'Readex Pro',
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryBackground,
-                                    letterSpacing: 0.0,
-                                  ),
+                          textStyle: FlutterFlowTheme.of(context)
+                              .bodySmall
+                              .override(
+                                fontFamily: 'Readex Pro',
+                                color: FlutterFlowTheme.of(context).primaryText,
+                                fontSize: 14.0,
+                                letterSpacing: 0.0,
+                              ),
+                          selectedTextStyle: FlutterFlowTheme.of(context)
+                              .bodyLarge
+                              .override(
+                                fontFamily: 'Readex Pro',
+                                color: FlutterFlowTheme.of(context).primaryText,
+                                letterSpacing: 0.0,
+                              ),
                           buttonPosition: RadioButtonPosition.left,
                           direction: Axis.vertical,
                           radioButtonColor:
-                              FlutterFlowTheme.of(context).alternate,
+                              FlutterFlowTheme.of(context).primaryText,
                           inactiveRadioButtonColor:
                               FlutterFlowTheme.of(context).secondaryText,
                           toggleable: false,
                           horizontalAlignment: WrapAlignment.center,
                           verticalAlignment: WrapCrossAlignment.start,
-                        ),
-                        Text(
-                          valueOrDefault<String>(
-                            _model.distanceSelectionValue,
-                            'g',
-                          ),
-                          style: FlutterFlowTheme.of(context)
-                              .bodyLarge
-                              .override(
-                                fontFamily: 'Readex Pro',
-                                color: FlutterFlowTheme.of(context).tertiary,
-                                fontSize: 10.0,
-                                letterSpacing: 0.0,
-                              ),
                         ),
                       ],
                     ),
@@ -147,8 +133,8 @@ class _FiltercompWidgetState extends State<FiltercompWidget> {
                   Container(
                     width: double.infinity,
                     height: 87.0,
-                    decoration: const BoxDecoration(
-                      color: Color(0x12B9ABA7),
+                    decoration: BoxDecoration(
+                      color: FlutterFlowTheme.of(context).secondaryBackground,
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
@@ -157,13 +143,13 @@ class _FiltercompWidgetState extends State<FiltercompWidget> {
                       children: [
                         Text(
                           'Sort By',
-                          style:
-                              FlutterFlowTheme.of(context).labelLarge.override(
-                                    fontFamily: 'Readex Pro',
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryBackground,
-                                    letterSpacing: 0.0,
-                                  ),
+                          style: FlutterFlowTheme.of(context)
+                              .labelLarge
+                              .override(
+                                fontFamily: 'Readex Pro',
+                                color: FlutterFlowTheme.of(context).primaryText,
+                                letterSpacing: 0.0,
+                              ),
                         ),
                         FlutterFlowRadioButton(
                           options: ['ASC', 'DESC'].toList(),
@@ -171,24 +157,24 @@ class _FiltercompWidgetState extends State<FiltercompWidget> {
                           controller: _model.sortSelectionValueController ??=
                               FormFieldController<String>('ASC'),
                           optionHeight: 24.0,
-                          textStyle:
-                              FlutterFlowTheme.of(context).bodySmall.override(
-                                    fontFamily: 'Readex Pro',
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryBackground,
-                                    letterSpacing: 0.0,
-                                  ),
-                          selectedTextStyle:
-                              FlutterFlowTheme.of(context).bodyLarge.override(
-                                    fontFamily: 'Readex Pro',
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryBackground,
-                                    letterSpacing: 0.0,
-                                  ),
+                          textStyle: FlutterFlowTheme.of(context)
+                              .bodySmall
+                              .override(
+                                fontFamily: 'Readex Pro',
+                                color: FlutterFlowTheme.of(context).primaryText,
+                                letterSpacing: 0.0,
+                              ),
+                          selectedTextStyle: FlutterFlowTheme.of(context)
+                              .bodyLarge
+                              .override(
+                                fontFamily: 'Readex Pro',
+                                color: FlutterFlowTheme.of(context).primaryText,
+                                letterSpacing: 0.0,
+                              ),
                           buttonPosition: RadioButtonPosition.left,
                           direction: Axis.horizontal,
                           radioButtonColor:
-                              FlutterFlowTheme.of(context).primaryBackground,
+                              FlutterFlowTheme.of(context).primaryText,
                           inactiveRadioButtonColor:
                               FlutterFlowTheme.of(context).secondaryText,
                           toggleable: false,
@@ -249,25 +235,25 @@ class _FiltercompWidgetState extends State<FiltercompWidget> {
                           controller: _model.viewSelectionValueController ??=
                               FormFieldController<String>('relevance'),
                           optionHeight: 25.0,
-                          textStyle:
-                              FlutterFlowTheme.of(context).bodySmall.override(
-                                    fontFamily: 'Readex Pro',
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryBackground,
-                                    fontSize: 14.0,
-                                    letterSpacing: 0.0,
-                                  ),
-                          selectedTextStyle:
-                              FlutterFlowTheme.of(context).bodyLarge.override(
-                                    fontFamily: 'Readex Pro',
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryBackground,
-                                    letterSpacing: 0.0,
-                                  ),
+                          textStyle: FlutterFlowTheme.of(context)
+                              .bodySmall
+                              .override(
+                                fontFamily: 'Readex Pro',
+                                color: FlutterFlowTheme.of(context).primaryText,
+                                fontSize: 14.0,
+                                letterSpacing: 0.0,
+                              ),
+                          selectedTextStyle: FlutterFlowTheme.of(context)
+                              .bodyLarge
+                              .override(
+                                fontFamily: 'Readex Pro',
+                                color: FlutterFlowTheme.of(context).primaryText,
+                                letterSpacing: 0.0,
+                              ),
                           buttonPosition: RadioButtonPosition.left,
                           direction: Axis.vertical,
                           radioButtonColor:
-                              FlutterFlowTheme.of(context).secondaryBackground,
+                              FlutterFlowTheme.of(context).primaryText,
                           inactiveRadioButtonColor:
                               FlutterFlowTheme.of(context).secondaryText,
                           toggleable: false,
@@ -299,20 +285,20 @@ class _FiltercompWidgetState extends State<FiltercompWidget> {
             width: 38.0,
             height: 48.0,
             decoration: BoxDecoration(
-              color: FlutterFlowTheme.of(context).primaryText,
+              color: FlutterFlowTheme.of(context).secondaryBackground,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.max,
               children: [
                 FlutterFlowIconButton(
-                  borderColor: FlutterFlowTheme.of(context).primaryText,
+                  borderColor: FlutterFlowTheme.of(context).secondaryBackground,
                   borderRadius: 20.0,
                   borderWidth: 1.0,
                   buttonSize: 40.0,
-                  fillColor: FlutterFlowTheme.of(context).primaryText,
+                  fillColor: FlutterFlowTheme.of(context).secondaryBackground,
                   icon: Icon(
                     Icons.arrow_back_outlined,
-                    color: FlutterFlowTheme.of(context).primaryBackground,
+                    color: FlutterFlowTheme.of(context).primaryText,
                     size: 34.0,
                   ),
                   onPressed: () async {

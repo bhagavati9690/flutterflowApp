@@ -20,15 +20,16 @@ class FFAppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  int _nn = 0;
-  int get nn => _nn;
-  set nn(int value) {
-    _nn = value;
-  }
-
   bool _visibalMap = true;
   bool get visibalMap => _visibalMap;
   set visibalMap(bool value) {
     _visibalMap = value;
+  }
+
+  String _banquetHall =
+      'https://5.imimg.com/data5/KD/ED/TR/SELLER-97243288/banquet-hall-interior-design-services-1000x1000.jpg';
+  String get banquetHall => _banquetHall;
+  set banquetHall(String value) {
+    _banquetHall = value;
   }
 }

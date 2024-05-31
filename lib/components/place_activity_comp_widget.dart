@@ -47,7 +47,7 @@ class _PlaceActivityCompWidgetState extends State<PlaceActivityCompWidget> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).primaryText,
+        color: FlutterFlowTheme.of(context).secondaryBackground,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -67,8 +67,7 @@ class _PlaceActivityCompWidgetState extends State<PlaceActivityCompWidget> {
                     'Place/Activity',
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           fontFamily: 'Readex Pro',
-                          color:
-                              FlutterFlowTheme.of(context).secondaryBackground,
+                          color: FlutterFlowTheme.of(context).primaryText,
                           fontSize: 17.0,
                           letterSpacing: 0.0,
                         ),
@@ -127,15 +126,14 @@ class _PlaceActivityCompWidgetState extends State<PlaceActivityCompWidget> {
                             .toList(),
                         onChanged: (val) async {
                           setState(() {});
-                          setState(() {
-                            _model.slection = functions.placeConversion(
-                                VenuesGroup.getPartyPlaceTypeCall
-                                    .details(
-                                      columnGetPartyPlaceTypeResponse.jsonBody,
-                                    )
-                                    ?.toList(),
-                                _model.placeSelectionValue);
-                          });
+                          _model.slection = functions.placeConversion(
+                              VenuesGroup.getPartyPlaceTypeCall
+                                  .details(
+                                    columnGetPartyPlaceTypeResponse.jsonBody,
+                                  )
+                                  ?.toList(),
+                              _model.placeSelectionValue);
+                          setState(() {});
                         },
                         controller: _model.placeSelectionValueController ??=
                             FormFieldController<String>(
@@ -146,25 +144,25 @@ class _PlaceActivityCompWidgetState extends State<PlaceActivityCompWidget> {
                                     .first),
                         optionHeight: 30.0,
                         optionWidth: MediaQuery.sizeOf(context).width * 0.9,
-                        textStyle:
-                            FlutterFlowTheme.of(context).bodySmall.override(
-                                  fontFamily: 'Readex Pro',
-                                  color: FlutterFlowTheme.of(context)
-                                      .primaryBackground,
-                                  fontSize: 14.0,
-                                  letterSpacing: 0.0,
-                                ),
-                        selectedTextStyle:
-                            FlutterFlowTheme.of(context).bodyLarge.override(
-                                  fontFamily: 'Readex Pro',
-                                  color: FlutterFlowTheme.of(context)
-                                      .primaryBackground,
-                                  letterSpacing: 0.0,
-                                ),
+                        textStyle: FlutterFlowTheme.of(context)
+                            .bodySmall
+                            .override(
+                              fontFamily: 'Readex Pro',
+                              color: FlutterFlowTheme.of(context).primaryText,
+                              fontSize: 14.0,
+                              letterSpacing: 0.0,
+                            ),
+                        selectedTextStyle: FlutterFlowTheme.of(context)
+                            .bodyLarge
+                            .override(
+                              fontFamily: 'Readex Pro',
+                              color: FlutterFlowTheme.of(context).primaryText,
+                              letterSpacing: 0.0,
+                            ),
                         buttonPosition: RadioButtonPosition.left,
                         direction: Axis.vertical,
                         radioButtonColor:
-                            FlutterFlowTheme.of(context).alternate,
+                            FlutterFlowTheme.of(context).primaryText,
                         inactiveRadioButtonColor:
                             FlutterFlowTheme.of(context).secondaryText,
                         toggleable: false,
@@ -203,8 +201,7 @@ class _PlaceActivityCompWidgetState extends State<PlaceActivityCompWidget> {
                       textStyle:
                           FlutterFlowTheme.of(context).titleSmall.override(
                                 fontFamily: 'Readex Pro',
-                                color: FlutterFlowTheme.of(context)
-                                    .secondaryBackground,
+                                color: FlutterFlowTheme.of(context).primaryText,
                                 letterSpacing: 0.0,
                               ),
                       elevation: 3.0,

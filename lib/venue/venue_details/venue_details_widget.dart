@@ -1,11 +1,12 @@
 import '/backend/api_requests/api_calls.dart';
 import '/backend/schema/structs/index.dart';
-import '/components/card13_podcast_widget.dart';
+import '/components/error_page_view_compoent_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_toggle_icon.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:smooth_page_indicator/smooth_page_indicator.dart'
     as smooth_page_indicator;
 import 'package:auto_size_text/auto_size_text.dart';
@@ -13,6 +14,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'venue_details_model.dart';
@@ -47,15 +49,37 @@ class _VenueDetailsWidgetState extends State<VenueDetailsWidget>
         venueId: widget.venueId,
       );
       if ((_model.apiResultVenueResult?.succeeded ?? true)) {
-        _model.photoQuery = PhotoQueryStruct(
-          clientId: 'viewVenueDetail__photoViewer',
-          cursor: CursorStruct(
-            parentRecordKey: VenuesGroup.venueDetailsCall.resourceId(
-              (_model.apiResultVenueResult?.jsonBody ?? ''),
-            ),
-          ),
-          selection: [0],
-        );
+        await Future.wait([
+          Future(() async {
+            _model.photoQuery = PhotoQueryStruct(
+              clientId: 'viewVenueDetail__photoViewer',
+              cursor: CursorStruct(
+                parentRecordKey: VenuesGroup.venueDetailsCall.resourceId(
+                  (_model.apiResultVenueResult?.jsonBody ?? ''),
+                ),
+              ),
+              selection: [0],
+            );
+            _model.apiResultVenuePhoto = await VenuesGroup.venuePhotoCall.call(
+              queryJson: _model.photoQuery.toMap(),
+            );
+          }),
+          Future(() async {
+            _model.photoQuery = PhotoQueryStruct(
+              clientId: 'viewVenueDetail__venuePackagesGrid',
+              cursor: CursorStruct(
+                parentRecordKey: VenuesGroup.venueDetailsCall.id(
+                  (_model.apiResultVenueResult?.jsonBody ?? ''),
+                ),
+              ),
+              selection: [0],
+            );
+            _model.apiResultVenuePackage =
+                await VenuesGroup.venuePackageCall.call(
+              queryJson: _model.photoQuery.toMap(),
+            );
+          }),
+        ]);
       }
     });
 
@@ -125,173 +149,143 @@ class _VenueDetailsWidgetState extends State<VenueDetailsWidget>
               actions: const [],
               flexibleSpace: FlexibleSpaceBar(
                 title: Container(
-                  decoration: const BoxDecoration(),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      AutoSizeText(
-                        valueOrDefault<String>(
-                          VenuesGroup.venueDetailsCall.name(
-                            venueDetailsVenueDetailsResponse.jsonBody,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context).secondaryBackground,
+                  ),
+                  child: Padding(
+                    padding:
+                        const EdgeInsetsDirectional.fromSTEB(44.0, 0.0, 0.0, 0.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Flexible(
+                          child: AutoSizeText(
+                            valueOrDefault<String>(
+                              VenuesGroup.venueDetailsCall.name(
+                                venueDetailsVenueDetailsResponse.jsonBody,
+                              ),
+                              '......',
+                            ),
+                            maxLines: 2,
+                            style: FlutterFlowTheme.of(context)
+                                .headlineMedium
+                                .override(
+                                  fontFamily: 'Outfit',
+                                  color:
+                                      FlutterFlowTheme.of(context).primaryText,
+                                  fontSize: 22.0,
+                                  letterSpacing: 0.0,
+                                ),
                           ),
-                          '......',
                         ),
-                        maxLines: 2,
-                        style: FlutterFlowTheme.of(context)
-                            .headlineMedium
-                            .override(
-                              fontFamily: 'Outfit',
-                              color: FlutterFlowTheme.of(context).primaryText,
-                              fontSize: 22.0,
-                              letterSpacing: 0.0,
+                        Row(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            FlutterFlowIconButton(
+                              borderColor: FlutterFlowTheme.of(context)
+                                  .secondaryBackground,
+                              borderRadius: 20.0,
+                              borderWidth: 1.0,
+                              buttonSize: 40.0,
+                              fillColor: FlutterFlowTheme.of(context)
+                                  .secondaryBackground,
+                              icon: Icon(
+                                Icons.save_alt,
+                                color: FlutterFlowTheme.of(context).primaryText,
+                                size: 24.0,
+                              ),
+                              onPressed: () {
+                                print('IconButton pressed ...');
+                              },
                             ),
-                      ),
-                      Row(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          FlutterFlowIconButton(
-                            borderColor: FlutterFlowTheme.of(context)
-                                .secondaryBackground,
-                            borderRadius: 20.0,
-                            borderWidth: 1.0,
-                            buttonSize: 40.0,
-                            fillColor: FlutterFlowTheme.of(context)
-                                .secondaryBackground,
-                            icon: Icon(
-                              Icons.save_alt,
-                              color: FlutterFlowTheme.of(context).primaryText,
-                              size: 24.0,
+                            ToggleIcon(
+                              onPressed: () async {
+                                setState(() =>
+                                    _model.isVenueLike = !_model.isVenueLike);
+                              },
+                              value: _model.isVenueLike,
+                              onIcon: Icon(
+                                Icons.favorite,
+                                color: FlutterFlowTheme.of(context).error,
+                                size: 25.0,
+                              ),
+                              offIcon: Icon(
+                                Icons.favorite_border,
+                                color: FlutterFlowTheme.of(context).primaryText,
+                                size: 25.0,
+                              ),
                             ),
-                            onPressed: () {
-                              print('IconButton pressed ...');
-                            },
-                          ),
-                          ToggleIcon(
-                            onPressed: () async {
-                              setState(() =>
-                                  _model.isVenueLike = !_model.isVenueLike);
-                            },
-                            value: _model.isVenueLike,
-                            onIcon: Icon(
-                              Icons.favorite,
-                              color: FlutterFlowTheme.of(context).error,
-                              size: 25.0,
-                            ),
-                            offIcon: Icon(
-                              Icons.favorite_border,
-                              color: FlutterFlowTheme.of(context).primaryText,
-                              size: 25.0,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                centerTitle: false,
+                centerTitle: true,
                 expandedTitleScale: 1.0,
               ),
-              elevation: 2.0,
             ),
             body: SafeArea(
               top: true,
-              child: Container(
-                decoration: const BoxDecoration(),
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(
-                              0.0, 15.0, 0.0, 0.0),
-                          child: SingleChildScrollView(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Container(
-                                  width: double.infinity,
-                                  decoration: const BoxDecoration(),
-                                  child: Container(
-                                    width: double.infinity,
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryBackground,
-                                    child: ExpandableNotifier(
-                                      controller: _model
-                                          .expandableExpandableController1,
-                                      child: ExpandablePanel(
-                                        header: Text(
-                                          'More Details ',
-                                          style: FlutterFlowTheme.of(context)
-                                              .labelLarge
-                                              .override(
-                                                fontFamily: 'Readex Pro',
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Container(
+                      decoration: const BoxDecoration(),
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                            16.0, 0.0, 16.0, 0.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
+                                  0.0, 15.0, 0.0, 0.0),
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  children: [
+                                    Container(
+                                      width: double.infinity,
+                                      decoration: const BoxDecoration(),
+                                      child: Container(
+                                        width: double.infinity,
+                                        color: FlutterFlowTheme.of(context)
+                                            .primaryBackground,
+                                        child: ExpandableNotifier(
+                                          controller: _model
+                                              .expandableExpandableController1,
+                                          child: ExpandablePanel(
+                                            header: Text(
+                                              'More Details ',
+                                              style: FlutterFlowTheme.of(
+                                                      context)
+                                                  .labelLarge
+                                                  .override(
+                                                    fontFamily: 'Readex Pro',
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .primaryText,
+                                                    letterSpacing: 0.0,
+                                                  ),
+                                            ),
+                                            collapsed: Container(
+                                              width: double.infinity,
+                                              decoration: BoxDecoration(
                                                 color:
                                                     FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                                letterSpacing: 0.0,
+                                                        .secondaryBackground,
                                               ),
-                                        ),
-                                        collapsed: Container(
-                                          width: double.infinity,
-                                          height: 24.0,
-                                          decoration: BoxDecoration(
-                                            color: FlutterFlowTheme.of(context)
-                                                .secondaryBackground,
-                                          ),
-                                          child: Text(
-                                            'Address,Price,Rating and More',
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  fontFamily: 'Readex Pro',
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .secondaryText,
-                                                  letterSpacing: 0.0,
-                                                ),
-                                          ),
-                                        ),
-                                        expanded: Padding(
-                                          padding:
-                                              const EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 0.0, 0.0, 12.0),
-                                          child: Container(
-                                            width: double.infinity,
-                                            constraints: const BoxConstraints(
-                                              maxWidth: 770.0,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primaryBackground,
-                                              boxShadow: const [
-                                                BoxShadow(
-                                                  blurRadius: 7.0,
-                                                  color: Color(0x2F1D2429),
-                                                  offset: Offset(
-                                                    0.0,
-                                                    3.0,
-                                                  ),
-                                                )
-                                              ],
-                                              borderRadius:
-                                                  BorderRadius.circular(8.0),
-                                            ),
-                                            child: Padding(
-                                              padding: const EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      16.0, 0.0, 2.0, 2.0),
                                               child: Column(
-                                                mainAxisSize: MainAxisSize.max,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
+                                                mainAxisSize: MainAxisSize.min,
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
@@ -319,6 +313,61 @@ class _VenueDetailsWidgetState extends State<VenueDetailsWidget>
                                                         style:
                                                             FlutterFlowTheme.of(
                                                                     context)
+                                                                .titleMedium
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Readex Pro',
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .primaryText,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        children: [
+                                                          Text(
+                                                            'Price : ',
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .titleSmall
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Readex Pro',
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .primaryText,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                ),
+                                                          ),
+                                                          Text(
+                                                            valueOrDefault<
+                                                                String>(
+                                                              VenuesGroup
+                                                                  .venueDetailsCall
+                                                                  .price(
+                                                                venueDetailsVenueDetailsResponse
+                                                                    .jsonBody,
+                                                              ),
+                                                              '\$\$\$\$',
+                                                            ),
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
                                                                 .bodyMedium
                                                                 .override(
                                                                   fontFamily:
@@ -326,35 +375,57 @@ class _VenueDetailsWidgetState extends State<VenueDetailsWidget>
                                                                   letterSpacing:
                                                                       0.0,
                                                                 ),
+                                                          ),
+                                                        ],
                                                       ),
-                                                      RatingBar.builder(
-                                                        onRatingUpdate: (newValue) =>
-                                                            setState(() => _model
-                                                                    .ratingBarValue1 =
-                                                                newValue),
-                                                        itemBuilder:
-                                                            (context, index) =>
-                                                                Icon(
-                                                          Icons.star_rounded,
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .primaryText,
-                                                        ),
-                                                        direction:
-                                                            Axis.horizontal,
-                                                        initialRating: _model
-                                                                .ratingBarValue1 ??=
-                                                            3.0,
-                                                        unratedColor:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .secondaryText,
-                                                        itemCount: 5,
-                                                        itemSize: 24.0,
-                                                        glowColor:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primaryText,
+                                                      Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        children: [
+                                                          RatingBar.builder(
+                                                            onRatingUpdate: (newValue) =>
+                                                                setState(() =>
+                                                                    _model.ratingBarValue1 =
+                                                                        newValue),
+                                                            itemBuilder:
+                                                                (context,
+                                                                        index) =>
+                                                                    Icon(
+                                                              Icons
+                                                                  .star_rounded,
+                                                              color: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .primaryText,
+                                                            ),
+                                                            direction:
+                                                                Axis.horizontal,
+                                                            initialRating: _model
+                                                                    .ratingBarValue1 ??=
+                                                                functions
+                                                                    .stringToIntegerConversion(
+                                                                        valueOrDefault<
+                                                                            String>(
+                                                                      VenuesGroup
+                                                                          .venueDetailsCall
+                                                                          .rank(
+                                                                        (_model.apiResultVenueResult?.jsonBody ??
+                                                                            ''),
+                                                                      ),
+                                                                      '0',
+                                                                    ))!
+                                                                    .toDouble(),
+                                                            unratedColor:
+                                                                FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .alternate,
+                                                            itemCount: 5,
+                                                            itemSize: 24.0,
+                                                            glowColor:
+                                                                FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .primaryText,
+                                                          ),
+                                                        ],
                                                       ),
                                                     ],
                                                   ),
@@ -373,7 +444,7 @@ class _VenueDetailsWidgetState extends State<VenueDetailsWidget>
                                                             'Ages:',
                                                             style: FlutterFlowTheme
                                                                     .of(context)
-                                                                .titleMedium
+                                                                .titleSmall
                                                                 .override(
                                                                   fontFamily:
                                                                       'Readex Pro',
@@ -382,9 +453,6 @@ class _VenueDetailsWidgetState extends State<VenueDetailsWidget>
                                                                       .primaryText,
                                                                   letterSpacing:
                                                                       0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
                                                                 ),
                                                           ),
                                                           Text(
@@ -418,7 +486,7 @@ class _VenueDetailsWidgetState extends State<VenueDetailsWidget>
                                                             'Gender:',
                                                             style: FlutterFlowTheme
                                                                     .of(context)
-                                                                .titleMedium
+                                                                .titleSmall
                                                                 .override(
                                                                   fontFamily:
                                                                       'Readex Pro',
@@ -427,9 +495,6 @@ class _VenueDetailsWidgetState extends State<VenueDetailsWidget>
                                                                       .primaryText,
                                                                   letterSpacing:
                                                                       0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
                                                                 ),
                                                           ),
                                                           Text(
@@ -457,36 +522,31 @@ class _VenueDetailsWidgetState extends State<VenueDetailsWidget>
                                                       ),
                                                     ],
                                                   ),
-                                                  SingleChildScrollView(
-                                                    scrollDirection:
-                                                        Axis.horizontal,
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.max,
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        Text(
-                                                          'Address :  ',
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .titleLarge
-                                                              .override(
-                                                                fontFamily:
-                                                                    'Outfit',
-                                                                color: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .primaryText,
-                                                                fontSize: 22.0,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w500,
-                                                              ),
-                                                        ),
-                                                        Text(
+                                                  Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Text(
+                                                        'Address :  ',
+                                                        style:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .titleSmall
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Readex Pro',
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .primaryText,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                ),
+                                                      ),
+                                                      Flexible(
+                                                        child: Text(
                                                           valueOrDefault<
                                                               String>(
                                                             VenuesGroup
@@ -508,54 +568,6 @@ class _VenueDetailsWidgetState extends State<VenueDetailsWidget>
                                                                     0.0,
                                                               ),
                                                         ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    children: [
-                                                      Text(
-                                                        'Price : ',
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .titleMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'Readex Pro',
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .primaryText,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                ),
-                                                      ),
-                                                      Text(
-                                                        valueOrDefault<String>(
-                                                          VenuesGroup
-                                                              .venueDetailsCall
-                                                              .price(
-                                                            venueDetailsVenueDetailsResponse
-                                                                .jsonBody,
-                                                          ),
-                                                          '\$\$\$\$',
-                                                        ),
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'Readex Pro',
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                ),
                                                       ),
                                                     ],
                                                   ),
@@ -570,7 +582,7 @@ class _VenueDetailsWidgetState extends State<VenueDetailsWidget>
                                                         style:
                                                             FlutterFlowTheme.of(
                                                                     context)
-                                                                .titleMedium
+                                                                .titleSmall
                                                                 .override(
                                                                   fontFamily:
                                                                       'Readex Pro',
@@ -579,9 +591,6 @@ class _VenueDetailsWidgetState extends State<VenueDetailsWidget>
                                                                       .primaryText,
                                                                   letterSpacing:
                                                                       0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
                                                                 ),
                                                       ),
                                                       Text(
@@ -616,7 +625,7 @@ class _VenueDetailsWidgetState extends State<VenueDetailsWidget>
                                                         style:
                                                             FlutterFlowTheme.of(
                                                                     context)
-                                                                .titleMedium
+                                                                .titleSmall
                                                                 .override(
                                                                   fontFamily:
                                                                       'Readex Pro',
@@ -625,9 +634,6 @@ class _VenueDetailsWidgetState extends State<VenueDetailsWidget>
                                                                       .primaryText,
                                                                   letterSpacing:
                                                                       0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
                                                                 ),
                                                       ),
                                                       Text(
@@ -653,17 +659,74 @@ class _VenueDetailsWidgetState extends State<VenueDetailsWidget>
                                                       ),
                                                     ],
                                                   ),
-                                                  Row(
+                                                ].divide(
+                                                    const SizedBox(height: 10.0)),
+                                              ),
+                                            ),
+                                            expanded: Padding(
+                                              padding: const EdgeInsetsDirectional
+                                                  .fromSTEB(
+                                                      0.0, 0.0, 0.0, 12.0),
+                                              child: Container(
+                                                width: double.infinity,
+                                                constraints: const BoxConstraints(
+                                                  maxWidth: 770.0,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .primaryBackground,
+                                                  boxShadow: const [
+                                                    BoxShadow(
+                                                      blurRadius: 7.0,
+                                                      color: Color(0x2F1D2429),
+                                                      offset: Offset(
+                                                        0.0,
+                                                        3.0,
+                                                      ),
+                                                    )
+                                                  ],
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          8.0),
+                                                ),
+                                                child: Padding(
+                                                  padding: const EdgeInsetsDirectional
+                                                      .fromSTEB(
+                                                          16.0, 0.0, 2.0, 2.0),
+                                                  child: Column(
                                                     mainAxisSize:
                                                         MainAxisSize.max,
                                                     mainAxisAlignment:
                                                         MainAxisAlignment.start,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
                                                     children: [
-                                                      Text(
-                                                        'Place Type:',
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
+                                                      Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            valueOrDefault<
+                                                                String>(
+                                                              VenuesGroup
+                                                                  .venueDetailsCall
+                                                                  .categories(
+                                                                (_model.apiResultVenueResult
+                                                                        ?.jsonBody ??
+                                                                    ''),
+                                                              ),
+                                                              '......',
+                                                            ),
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
                                                                 .titleMedium
                                                                 .override(
                                                                   fontFamily:
@@ -673,389 +736,707 @@ class _VenueDetailsWidgetState extends State<VenueDetailsWidget>
                                                                       .primaryText,
                                                                   letterSpacing:
                                                                       0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
                                                                 ),
-                                                      ),
-                                                      Text(
-                                                        valueOrDefault<String>(
-                                                          VenuesGroup
-                                                              .venueDetailsCall
-                                                              .partyPlace(
-                                                            venueDetailsVenueDetailsResponse
-                                                                .jsonBody,
                                                           ),
-                                                          '......',
-                                                        ),
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'Readex Pro',
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                ),
+                                                        ],
                                                       ),
-                                                    ],
-                                                  ),
-                                                  Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    children: [
-                                                      Text(
-                                                        'Activities:',
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .titleMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'Readex Pro',
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .primaryText,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
+                                                      Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Row(
+                                                            mainAxisSize:
+                                                                MainAxisSize
+                                                                    .max,
+                                                            children: [
+                                                              Text(
+                                                                'Price : ',
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .titleSmall
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'Readex Pro',
+                                                                      color: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .primaryText,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                    ),
+                                                              ),
+                                                              Text(
+                                                                valueOrDefault<
+                                                                    String>(
+                                                                  VenuesGroup
+                                                                      .venueDetailsCall
+                                                                      .price(
+                                                                    venueDetailsVenueDetailsResponse
+                                                                        .jsonBody,
+                                                                  ),
+                                                                  '\$\$\$\$',
                                                                 ),
-                                                      ),
-                                                      Text(
-                                                        'Others',
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'Readex Pro',
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    children: [
-                                                      Text(
-                                                        'Accomodates:',
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .titleMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'Readex Pro',
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .primaryText,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                ),
-                                                      ),
-                                                      Text(
-                                                        valueOrDefault<String>(
-                                                          VenuesGroup
-                                                              .venueDetailsCall
-                                                              .accomodates(
-                                                            venueDetailsVenueDetailsResponse
-                                                                .jsonBody,
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'Readex Pro',
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                    ),
+                                                              ),
+                                                            ],
                                                           ),
-                                                          '......',
-                                                        ),
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'Readex Pro',
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    children: [
-                                                      Text(
-                                                        'Indoor/Outdoor:',
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .titleMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'Readex Pro',
+                                                          Row(
+                                                            mainAxisSize:
+                                                                MainAxisSize
+                                                                    .max,
+                                                            children: [
+                                                              RatingBar.builder(
+                                                                onRatingUpdate: (newValue) =>
+                                                                    setState(() =>
+                                                                        _model.ratingBarValue2 =
+                                                                            newValue),
+                                                                itemBuilder:
+                                                                    (context,
+                                                                            index) =>
+                                                                        Icon(
+                                                                  Icons
+                                                                      .star_rounded,
                                                                   color: FlutterFlowTheme.of(
                                                                           context)
                                                                       .primaryText,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
                                                                 ),
-                                                      ),
-                                                      Text(
-                                                        valueOrDefault<String>(
-                                                          VenuesGroup
-                                                              .venueDetailsCall
-                                                              .activityCategories(
-                                                            venueDetailsVenueDetailsResponse
-                                                                .jsonBody,
-                                                          ),
-                                                          '....',
-                                                        ),
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'Readex Pro',
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    children: [
-                                                      Text(
-                                                        'Avilable on:',
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .titleMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'Readex Pro',
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .primaryText,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                ),
-                                                      ),
-                                                      Text(
-                                                        valueOrDefault<String>(
-                                                          VenuesGroup
-                                                              .venueDetailsCall
-                                                              .availableDay(
-                                                            venueDetailsVenueDetailsResponse
-                                                                .jsonBody,
-                                                          ),
-                                                          '....',
-                                                        ),
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'Readex Pro',
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  SingleChildScrollView(
-                                                    scrollDirection:
-                                                        Axis.horizontal,
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.max,
-                                                      children: [
-                                                        Text(
-                                                          'Description : ',
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .titleMedium
-                                                              .override(
-                                                                fontFamily:
-                                                                    'Readex Pro',
-                                                                color: FlutterFlowTheme.of(
+                                                                direction: Axis
+                                                                    .horizontal,
+                                                                initialRating: _model
+                                                                        .ratingBarValue2 ??=
+                                                                    functions
+                                                                        .stringToIntegerConversion(
+                                                                            valueOrDefault<String>(
+                                                                          VenuesGroup
+                                                                              .venueDetailsCall
+                                                                              .rank(
+                                                                            (_model.apiResultVenueResult?.jsonBody ??
+                                                                                ''),
+                                                                          ),
+                                                                          '0',
+                                                                        ))!
+                                                                        .toDouble(),
+                                                                unratedColor:
+                                                                    FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .alternate,
+                                                                itemCount: 5,
+                                                                itemSize: 24.0,
+                                                                glowColor: FlutterFlowTheme.of(
                                                                         context)
                                                                     .primaryText,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
                                                               ),
-                                                        ),
-                                                        Text(
-                                                          valueOrDefault<
-                                                              String>(
-                                                            VenuesGroup
-                                                                .venueDetailsCall
-                                                                .description(
-                                                              (_model.apiResultVenueResult
-                                                                      ?.jsonBody ??
-                                                                  ''),
-                                                            ),
-                                                            '........',
+                                                            ],
                                                           ),
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                fontFamily:
-                                                                    'Readex Pro',
-                                                                letterSpacing:
-                                                                    0.0,
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Row(
+                                                            mainAxisSize:
+                                                                MainAxisSize
+                                                                    .max,
+                                                            children: [
+                                                              Text(
+                                                                'Ages:',
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .titleSmall
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'Readex Pro',
+                                                                      color: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .primaryText,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                    ),
                                                               ),
-                                                        ),
-                                                      ],
-                                                    ),
+                                                              Text(
+                                                                valueOrDefault<
+                                                                    String>(
+                                                                  VenuesGroup
+                                                                      .venueDetailsCall
+                                                                      .forAges(
+                                                                    venueDetailsVenueDetailsResponse
+                                                                        .jsonBody,
+                                                                  ),
+                                                                  '......',
+                                                                ),
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'Readex Pro',
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                    ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          Row(
+                                                            mainAxisSize:
+                                                                MainAxisSize
+                                                                    .max,
+                                                            children: [
+                                                              Text(
+                                                                'Gender:',
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .titleSmall
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'Readex Pro',
+                                                                      color: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .primaryText,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                    ),
+                                                              ),
+                                                              Text(
+                                                                valueOrDefault<
+                                                                    String>(
+                                                                  VenuesGroup
+                                                                      .venueDetailsCall
+                                                                      .gender(
+                                                                    venueDetailsVenueDetailsResponse
+                                                                        .jsonBody,
+                                                                  ),
+                                                                  '.......',
+                                                                ),
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'Readex Pro',
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                    ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Text(
+                                                            'Address :  ',
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .titleSmall
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Readex Pro',
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .primaryText,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                ),
+                                                          ),
+                                                          Flexible(
+                                                            child: Text(
+                                                              valueOrDefault<
+                                                                  String>(
+                                                                VenuesGroup
+                                                                    .venueDetailsCall
+                                                                    .address(
+                                                                      venueDetailsVenueDetailsResponse
+                                                                          .jsonBody,
+                                                                    )
+                                                                    ?.first,
+                                                                '...',
+                                                              ),
+                                                              style: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .bodyMedium
+                                                                  .override(
+                                                                    fontFamily:
+                                                                        'Readex Pro',
+                                                                    letterSpacing:
+                                                                        0.0,
+                                                                  ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            'Contact:',
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .titleSmall
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Readex Pro',
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .primaryText,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                ),
+                                                          ),
+                                                          Text(
+                                                            valueOrDefault<
+                                                                String>(
+                                                              VenuesGroup
+                                                                  .venueDetailsCall
+                                                                  .phoneNo(
+                                                                venueDetailsVenueDetailsResponse
+                                                                    .jsonBody,
+                                                              ),
+                                                              '111111111',
+                                                            ),
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Readex Pro',
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        children: [
+                                                          Text(
+                                                            'Email:',
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .titleSmall
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Readex Pro',
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .primaryText,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                ),
+                                                          ),
+                                                          Text(
+                                                            valueOrDefault<
+                                                                String>(
+                                                              VenuesGroup
+                                                                  .venueDetailsCall
+                                                                  .email(
+                                                                venueDetailsVenueDetailsResponse
+                                                                    .jsonBody,
+                                                              ),
+                                                              '......',
+                                                            ),
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Readex Pro',
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            'Place Type:',
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .titleSmall
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Readex Pro',
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .primaryText,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                ),
+                                                          ),
+                                                          Text(
+                                                            valueOrDefault<
+                                                                String>(
+                                                              VenuesGroup
+                                                                  .venueDetailsCall
+                                                                  .partyPlace(
+                                                                venueDetailsVenueDetailsResponse
+                                                                    .jsonBody,
+                                                              ),
+                                                              '......',
+                                                            ),
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Readex Pro',
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        children: [
+                                                          Text(
+                                                            'Activities:',
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .titleSmall
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Readex Pro',
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .primaryText,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                ),
+                                                          ),
+                                                          Text(
+                                                            'Others',
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Readex Pro',
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            'Accomodates:',
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .titleSmall
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Readex Pro',
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .primaryText,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                ),
+                                                          ),
+                                                          Text(
+                                                            valueOrDefault<
+                                                                String>(
+                                                              VenuesGroup
+                                                                  .venueDetailsCall
+                                                                  .accomodates(
+                                                                venueDetailsVenueDetailsResponse
+                                                                    .jsonBody,
+                                                              ),
+                                                              '......',
+                                                            ),
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Readex Pro',
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        children: [
+                                                          Text(
+                                                            'Indoor/Outdoor:',
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .titleSmall
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Readex Pro',
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .primaryText,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                ),
+                                                          ),
+                                                          Text(
+                                                            valueOrDefault<
+                                                                String>(
+                                                              VenuesGroup
+                                                                  .venueDetailsCall
+                                                                  .activityCategories(
+                                                                venueDetailsVenueDetailsResponse
+                                                                    .jsonBody,
+                                                              ),
+                                                              '....',
+                                                            ),
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Readex Pro',
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        children: [
+                                                          Text(
+                                                            'Avilable on:',
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .titleSmall
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Readex Pro',
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .primaryText,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                ),
+                                                          ),
+                                                          Text(
+                                                            valueOrDefault<
+                                                                String>(
+                                                              VenuesGroup
+                                                                  .venueDetailsCall
+                                                                  .availableDay(
+                                                                venueDetailsVenueDetailsResponse
+                                                                    .jsonBody,
+                                                              ),
+                                                              '....',
+                                                            ),
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Readex Pro',
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        children: [
+                                                          Flexible(
+                                                            child: Column(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                Text(
+                                                                  'Description : ',
+                                                                  style: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .titleSmall
+                                                                      .override(
+                                                                        fontFamily:
+                                                                            'Readex Pro',
+                                                                        color: FlutterFlowTheme.of(context)
+                                                                            .primaryText,
+                                                                        letterSpacing:
+                                                                            0.0,
+                                                                      ),
+                                                                ),
+                                                                Html(
+                                                                  data: valueOrDefault<
+                                                                      String>(
+                                                                    VenuesGroup
+                                                                        .venueDetailsCall
+                                                                        .description(
+                                                                      (_model.apiResultVenueResult
+                                                                              ?.jsonBody ??
+                                                                          ''),
+                                                                    ),
+                                                                    '........',
+                                                                  ),
+                                                                  onLinkTap: (url,
+                                                                          _,
+                                                                          __,
+                                                                          ___) =>
+                                                                      launchURL(
+                                                                          url!),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ]
+                                                        .divide(const SizedBox(
+                                                            height: 12.0))
+                                                        .addToStart(const SizedBox(
+                                                            height: 2.0))
+                                                        .addToEnd(const SizedBox(
+                                                            height: 3.0)),
                                                   ),
-                                                ]
-                                                    .divide(
-                                                        const SizedBox(height: 12.0))
-                                                    .addToStart(
-                                                        const SizedBox(height: 2.0))
-                                                    .addToEnd(
-                                                        const SizedBox(height: 3.0)),
+                                                ),
                                               ),
+                                            ),
+                                            theme: ExpandableThemeData(
+                                              tapHeaderToExpand: true,
+                                              tapBodyToExpand: true,
+                                              tapBodyToCollapse: true,
+                                              headerAlignment:
+                                                  ExpandablePanelHeaderAlignment
+                                                      .center,
+                                              hasIcon: true,
+                                              iconColor:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primaryText,
                                             ),
                                           ),
                                         ),
-                                        theme: ExpandableThemeData(
-                                          tapHeaderToExpand: true,
-                                          tapBodyToExpand: true,
-                                          tapBodyToCollapse: true,
-                                          headerAlignment:
-                                              ExpandablePanelHeaderAlignment
-                                                  .center,
-                                          hasIcon: true,
-                                          iconColor:
-                                              FlutterFlowTheme.of(context)
-                                                  .primaryText,
-                                        ),
                                       ),
                                     ),
-                                  ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Column(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Container(
-                              width: double.infinity,
-                              height: 250.0,
-                              decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context)
-                                    .secondaryBackground,
                               ),
-                              child: Column(
-                                children: [
-                                  Align(
-                                    alignment: const Alignment(0.0, 0),
-                                    child: TabBar(
-                                      labelColor: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                      unselectedLabelColor:
-                                          FlutterFlowTheme.of(context)
-                                              .secondaryText,
-                                      labelStyle: FlutterFlowTheme.of(context)
-                                          .bodyLarge
-                                          .override(
-                                            fontFamily: 'Readex Pro',
-                                            fontSize: 16.0,
-                                            letterSpacing: 0.0,
-                                          ),
-                                      unselectedLabelStyle:
-                                          FlutterFlowTheme.of(context)
-                                              .bodyLarge
-                                              .override(
-                                                fontFamily: 'Readex Pro',
-                                                fontSize: 16.0,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                      indicatorColor:
-                                          FlutterFlowTheme.of(context)
-                                              .primaryText,
-                                      padding: const EdgeInsets.all(1.0),
-                                      tabs: const [
-                                        Tab(
-                                          text: 'Photo',
-                                        ),
-                                        Tab(
-                                          text: 'Video',
-                                        ),
-                                        Tab(
-                                          text: 'Map',
-                                        ),
-                                      ],
-                                      controller: _model.tabBarController,
-                                      onTap: (i) async {
-                                        [
-                                          () async {},
-                                          () async {},
-                                          () async {}
-                                        ][i]();
-                                      },
-                                    ),
+                            ),
+                            Column(
+                              mainAxisSize: MainAxisSize.max,
+                              children: [
+                                Container(
+                                  width: double.infinity,
+                                  height: 250.0,
+                                  decoration: BoxDecoration(
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryBackground,
                                   ),
-                                  Expanded(
-                                    child: TabBarView(
-                                      controller: _model.tabBarController,
-                                      children: [
-                                        FutureBuilder<ApiCallResponse>(
-                                          future:
-                                              VenuesGroup.venuePhotoCall.call(
-                                            queryJson:
-                                                _model.photoQuery?.toMap(),
-                                          ),
-                                          builder: (context, snapshot) {
-                                            // Customize what your widget looks like when it's loading.
-                                            if (!snapshot.hasData) {
-                                              return Center(
-                                                child: SizedBox(
-                                                  width: 20.0,
-                                                  height: 20.0,
-                                                  child: SpinKitRing(
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .primary,
-                                                    size: 20.0,
+                                  child: Column(
+                                    children: [
+                                      Align(
+                                        alignment: const Alignment(0.0, 0),
+                                        child: TabBar(
+                                          labelColor:
+                                              FlutterFlowTheme.of(context)
+                                                  .primaryText,
+                                          unselectedLabelColor:
+                                              FlutterFlowTheme.of(context)
+                                                  .secondaryText,
+                                          labelStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyLarge
+                                                  .override(
+                                                    fontFamily: 'Readex Pro',
+                                                    fontSize: 16.0,
+                                                    letterSpacing: 0.0,
                                                   ),
-                                                ),
-                                              );
-                                            }
-                                            final pageViewVenuePhotoResponse =
-                                                snapshot.data!;
-                                            return Builder(
+                                          unselectedLabelStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyLarge
+                                                  .override(
+                                                    fontFamily: 'Readex Pro',
+                                                    fontSize: 16.0,
+                                                    letterSpacing: 0.0,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                          indicatorColor:
+                                              FlutterFlowTheme.of(context)
+                                                  .primaryText,
+                                          padding: const EdgeInsets.all(1.0),
+                                          tabs: const [
+                                            Tab(
+                                              text: 'Photo',
+                                            ),
+                                            Tab(
+                                              text: 'Video',
+                                            ),
+                                            Tab(
+                                              text: 'Map',
+                                            ),
+                                          ],
+                                          controller: _model.tabBarController,
+                                          onTap: (i) async {
+                                            [
+                                              () async {},
+                                              () async {},
+                                              () async {}
+                                            ][i]();
+                                          },
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: TabBarView(
+                                          controller: _model.tabBarController,
+                                          children: [
+                                            Builder(
                                               builder: (context) {
                                                 final imagePath =
                                                     VenuesGroup.venuePhotoCall
                                                             .image(
-                                                              pageViewVenuePhotoResponse
-                                                                  .jsonBody,
+                                                              (_model.apiResultVenuePhoto
+                                                                      ?.jsonBody ??
+                                                                  ''),
                                                             )
                                                             ?.toList() ??
                                                         [];
@@ -1065,7 +1446,9 @@ class _VenueDetailsWidgetState extends State<VenueDetailsWidget>
                                                       width: double.infinity,
                                                       height: 500.0,
                                                       child:
-                                                          Card13PodcastWidget(),
+                                                          ErrorPageViewCompoentWidget(
+                                                        text: 'Image',
+                                                      ),
                                                     ),
                                                   );
                                                 }
@@ -1196,634 +1579,804 @@ class _VenueDetailsWidgetState extends State<VenueDetailsWidget>
                                                   ),
                                                 );
                                               },
-                                            );
-                                          },
-                                        ),
-                                        Text(
-                                          'Tab View 2',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily: 'Readex Pro',
-                                                fontSize: 32.0,
-                                                letterSpacing: 0.0,
-                                              ),
-                                        ),
-                                        Text(
-                                          'Tab View 3',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily: 'Readex Pro',
-                                                fontSize: 32.0,
-                                                letterSpacing: 0.0,
-                                              ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              Container(
-                                decoration: const BoxDecoration(),
-                                child: Container(
-                                  width: double.infinity,
-                                  color: FlutterFlowTheme.of(context)
-                                      .primaryBackground,
-                                  child: ExpandableNotifier(
-                                    controller:
-                                        _model.expandableExpandableController2,
-                                    child: ExpandablePanel(
-                                      header: Text(
-                                        'Description',
-                                        style: FlutterFlowTheme.of(context)
-                                            .labelLarge
-                                            .override(
-                                              fontFamily: 'Readex Pro',
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primaryText,
-                                              letterSpacing: 0.0,
                                             ),
-                                      ),
-                                      collapsed: Container(),
-                                      expanded: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  fontFamily: 'Readex Pro',
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primaryText,
-                                                  letterSpacing: 0.0,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                      theme: ExpandableThemeData(
-                                        tapHeaderToExpand: true,
-                                        tapBodyToExpand: true,
-                                        tapBodyToCollapse: true,
-                                        headerAlignment:
-                                            ExpandablePanelHeaderAlignment
-                                                .center,
-                                        hasIcon: true,
-                                        iconColor: FlutterFlowTheme.of(context)
-                                            .primaryText,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              Container(
-                                decoration: const BoxDecoration(),
-                                child: Container(
-                                  width: double.infinity,
-                                  color: FlutterFlowTheme.of(context)
-                                      .primaryBackground,
-                                  child: ExpandableNotifier(
-                                    controller:
-                                        _model.expandableExpandableController3,
-                                    child: ExpandablePanel(
-                                      header: Text(
-                                        'Packages',
-                                        style: FlutterFlowTheme.of(context)
-                                            .labelLarge
-                                            .override(
-                                              fontFamily: 'Readex Pro',
-                                              color:
+                                            Text(
+                                              'Tab View 2',
+                                              style:
                                                   FlutterFlowTheme.of(context)
-                                                      .primaryText,
-                                              letterSpacing: 0.0,
-                                            ),
-                                      ),
-                                      collapsed: Container(),
-                                      expanded: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  fontFamily: 'Readex Pro',
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primaryText,
-                                                  letterSpacing: 0.0,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                      theme: ExpandableThemeData(
-                                        tapHeaderToExpand: true,
-                                        tapBodyToExpand: true,
-                                        tapBodyToCollapse: true,
-                                        headerAlignment:
-                                            ExpandablePanelHeaderAlignment
-                                                .center,
-                                        hasIcon: true,
-                                        iconColor: FlutterFlowTheme.of(context)
-                                            .primaryText,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              Container(
-                                decoration: const BoxDecoration(),
-                                child: Container(
-                                  width: double.infinity,
-                                  color: FlutterFlowTheme.of(context)
-                                      .primaryBackground,
-                                  child: ExpandableNotifier(
-                                    controller:
-                                        _model.expandableExpandableController4,
-                                    child: ExpandablePanel(
-                                      header: Text(
-                                        'Hall/Space',
-                                        style: FlutterFlowTheme.of(context)
-                                            .labelLarge
-                                            .override(
-                                              fontFamily: 'Readex Pro',
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primaryText,
-                                              letterSpacing: 0.0,
-                                            ),
-                                      ),
-                                      collapsed: Container(),
-                                      expanded: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  fontFamily: 'Readex Pro',
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primaryText,
-                                                  letterSpacing: 0.0,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                      theme: ExpandableThemeData(
-                                        tapHeaderToExpand: true,
-                                        tapBodyToExpand: true,
-                                        tapBodyToCollapse: true,
-                                        headerAlignment:
-                                            ExpandablePanelHeaderAlignment
-                                                .center,
-                                        hasIcon: true,
-                                        iconColor: FlutterFlowTheme.of(context)
-                                            .primaryText,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              Container(
-                                decoration: const BoxDecoration(),
-                                child: Container(
-                                  width: double.infinity,
-                                  color: FlutterFlowTheme.of(context)
-                                      .primaryBackground,
-                                  child: ExpandableNotifier(
-                                    controller:
-                                        _model.expandableExpandableController5,
-                                    child: ExpandablePanel(
-                                      header: Text(
-                                        'PayMent',
-                                        style: FlutterFlowTheme.of(context)
-                                            .labelLarge
-                                            .override(
-                                              fontFamily: 'Readex Pro',
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primaryText,
-                                              letterSpacing: 0.0,
-                                            ),
-                                      ),
-                                      collapsed: Container(),
-                                      expanded: Padding(
-                                        padding: const EdgeInsetsDirectional.fromSTEB(
-                                            16.0, 0.0, 0.0, 2.0),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            if (VenuesGroup.venueDetailsCall
-                                                        .paymentMode(
-                                                      (_model.apiResultVenueResult
-                                                              ?.jsonBody ??
-                                                          ''),
-                                                    ) !=
-                                                    null &&
-                                                VenuesGroup.venueDetailsCall
-                                                        .paymentMode(
-                                                      (_model.apiResultVenueResult
-                                                              ?.jsonBody ??
-                                                          ''),
-                                                    ) !=
-                                                    '')
-                                              SingleChildScrollView(
-                                                scrollDirection:
-                                                    Axis.horizontal,
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  children: [
-                                                    Text(
-                                                      'Payment Mode : ',
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            fontFamily:
-                                                                'Readex Pro',
-                                                            letterSpacing: 0.0,
-                                                          ),
-                                                    ),
-                                                    Text(
-                                                      valueOrDefault<String>(
-                                                        VenuesGroup
-                                                            .venueDetailsCall
-                                                            .paymentMode(
-                                                          (_model.apiResultVenueResult
-                                                                  ?.jsonBody ??
-                                                              ''),
-                                                        ),
-                                                        '....',
-                                                      ),
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            fontFamily:
-                                                                'Readex Pro',
-                                                            letterSpacing: 0.0,
-                                                          ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            if (VenuesGroup.venueDetailsCall
-                                                        .cardAccepted(
-                                                      (_model.apiResultVenueResult
-                                                              ?.jsonBody ??
-                                                          ''),
-                                                    ) !=
-                                                    null &&
-                                                VenuesGroup.venueDetailsCall
-                                                        .cardAccepted(
-                                                      (_model.apiResultVenueResult
-                                                              ?.jsonBody ??
-                                                          ''),
-                                                    ) !=
-                                                    '')
-                                              SingleChildScrollView(
-                                                scrollDirection:
-                                                    Axis.horizontal,
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  children: [
-                                                    Text(
-                                                      'Card : ',
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            fontFamily:
-                                                                'Readex Pro',
-                                                            letterSpacing: 0.0,
-                                                          ),
-                                                    ),
-                                                    Text(
-                                                      valueOrDefault<String>(
-                                                        VenuesGroup
-                                                            .venueDetailsCall
-                                                            .cardAccepted(
-                                                          (_model.apiResultVenueResult
-                                                                  ?.jsonBody ??
-                                                              ''),
-                                                        ),
-                                                        '......',
-                                                      ),
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            fontFamily:
-                                                                'Readex Pro',
-                                                            letterSpacing: 0.0,
-                                                          ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                          ]
-                                              .divide(const SizedBox(height: 6.0))
-                                              .addToStart(const SizedBox(height: 6.0))
-                                              .addToEnd(const SizedBox(height: 6.0)),
-                                        ),
-                                      ),
-                                      theme: ExpandableThemeData(
-                                        tapHeaderToExpand: true,
-                                        tapBodyToExpand: true,
-                                        tapBodyToCollapse: true,
-                                        headerAlignment:
-                                            ExpandablePanelHeaderAlignment
-                                                .center,
-                                        hasIcon: true,
-                                        iconColor: FlutterFlowTheme.of(context)
-                                            .primaryText,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              Container(
-                                decoration: const BoxDecoration(),
-                                child: Container(
-                                  width: double.infinity,
-                                  color: FlutterFlowTheme.of(context)
-                                      .primaryBackground,
-                                  child: ExpandableNotifier(
-                                    controller:
-                                        _model.expandableExpandableController6,
-                                    child: ExpandablePanel(
-                                      header: Text(
-                                        'Review',
-                                        style: FlutterFlowTheme.of(context)
-                                            .labelLarge
-                                            .override(
-                                              fontFamily: 'Readex Pro',
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primaryText,
-                                              letterSpacing: 0.0,
-                                            ),
-                                      ),
-                                      collapsed: Container(),
-                                      expanded: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  fontFamily: 'Readex Pro',
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primaryText,
-                                                  letterSpacing: 0.0,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                      theme: ExpandableThemeData(
-                                        tapHeaderToExpand: true,
-                                        tapBodyToExpand: true,
-                                        tapBodyToCollapse: true,
-                                        headerAlignment:
-                                            ExpandablePanelHeaderAlignment
-                                                .center,
-                                        hasIcon: true,
-                                        iconColor: FlutterFlowTheme.of(context)
-                                            .primaryText,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Column(
-                          mainAxisSize: MainAxisSize.max,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            FFButtonWidget(
-                              onPressed: () {
-                                print('Button pressed ...');
-                              },
-                              text: 'Similar Venues',
-                              options: FFButtonOptions(
-                                width: double.infinity,
-                                height: 40.0,
-                                padding: const EdgeInsetsDirectional.fromSTEB(
-                                    24.0, 0.0, 24.0, 0.0),
-                                iconPadding: const EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 0.0),
-                                color: FlutterFlowTheme.of(context)
-                                    .primaryBackground,
-                                textStyle: FlutterFlowTheme.of(context)
-                                    .labelLarge
-                                    .override(
-                                      fontFamily: 'Readex Pro',
-                                      letterSpacing: 0.0,
-                                    ),
-                                elevation: 3.0,
-                                borderSide: const BorderSide(
-                                  color: Colors.transparent,
-                                  width: 1.0,
-                                ),
-                                borderRadius: BorderRadius.circular(4.0),
-                              ),
-                            ),
-                            SizedBox(
-                              width: double.infinity,
-                              height: 128.0,
-                              child: CarouselSlider(
-                                items: [
-                                  Container(
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                      color:
-                                          FlutterFlowTheme.of(context).tertiary,
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsetsDirectional.fromSTEB(
-                                          2.0, 0.0, 2.0, 0.0),
-                                      child: SingleChildScrollView(
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(8.0),
-                                              child: Image.network(
-                                                'https://picsum.photos/seed/203/600',
-                                                width: double.infinity,
-                                                fit: BoxFit.cover,
-                                              ),
-                                            ),
-                                            RatingBar.builder(
-                                              onRatingUpdate: (newValue) =>
-                                                  setState(() =>
-                                                      _model.ratingBarValue2 =
-                                                          newValue),
-                                              itemBuilder: (context, index) =>
-                                                  Icon(
-                                                Icons.star_rounded,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                              ),
-                                              direction: Axis.horizontal,
-                                              initialRating: _model
-                                                  .ratingBarValue2 ??= 3.0,
-                                              unratedColor:
-                                                  FlutterFlowTheme.of(context)
-                                                      .alternate,
-                                              itemCount: 5,
-                                              itemSize: 17.0,
-                                              glowColor:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primaryText,
-                                            ),
-                                            Row(
-                                              mainAxisSize: MainAxisSize.max,
-                                              children: [
-                                                Text(
-                                                  'Hello World',
-                                                  style: FlutterFlowTheme.of(
-                                                          context)
                                                       .bodyMedium
                                                       .override(
                                                         fontFamily:
                                                             'Readex Pro',
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primaryText,
-                                                        fontSize: 14.0,
+                                                        fontSize: 32.0,
                                                         letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.normal,
                                                       ),
-                                                ),
-                                              ],
+                                            ),
+                                            Text(
+                                              'Tab View 3',
+                                              style:
+                                                  FlutterFlowTheme.of(context)
+                                                      .bodyMedium
+                                                      .override(
+                                                        fontFamily:
+                                                            'Readex Pro',
+                                                        fontSize: 32.0,
+                                                        letterSpacing: 0.0,
+                                                      ),
                                             ),
                                           ],
                                         ),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    child: Image.network(
-                                      'https://picsum.photos/seed/446/600',
+                                ),
+                              ],
+                            ),
+                            SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  Container(
+                                    width: double.infinity,
+                                    decoration: const BoxDecoration(),
+                                    child: Container(
                                       width: double.infinity,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    child: Image.network(
-                                      'https://picsum.photos/seed/41/600',
-                                      width: double.infinity,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    child: Image.network(
-                                      'https://picsum.photos/seed/545/600',
-                                      width: double.infinity,
-                                      fit: BoxFit.cover,
+                                      color: FlutterFlowTheme.of(context)
+                                          .primaryBackground,
+                                      child: ExpandableNotifier(
+                                        controller: _model
+                                            .expandableExpandableController2,
+                                        child: ExpandablePanel(
+                                          header: Text(
+                                            'Description',
+                                            style: FlutterFlowTheme.of(context)
+                                                .labelLarge
+                                                .override(
+                                                  fontFamily: 'Readex Pro',
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .primaryText,
+                                                  letterSpacing: 0.0,
+                                                ),
+                                          ),
+                                          collapsed: Container(
+                                            width: double.infinity,
+                                            height: 2.0,
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .secondaryBackground,
+                                            ),
+                                          ),
+                                          expanded: Html(
+                                            data: VenuesGroup.venueDetailsCall
+                                                .longDescription(
+                                              (_model.apiResultVenueResult
+                                                      ?.jsonBody ??
+                                                  ''),
+                                            )!,
+                                            onLinkTap: (url, _, __, ___) =>
+                                                launchURL(url!),
+                                          ),
+                                          theme: ExpandableThemeData(
+                                            tapHeaderToExpand: true,
+                                            tapBodyToExpand: true,
+                                            tapBodyToCollapse: true,
+                                            headerAlignment:
+                                                ExpandablePanelHeaderAlignment
+                                                    .center,
+                                            hasIcon: true,
+                                            iconColor:
+                                                FlutterFlowTheme.of(context)
+                                                    .primaryText,
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],
-                                carouselController:
-                                    _model.carouselController ??=
-                                        CarouselController(),
-                                options: CarouselOptions(
-                                  initialPage: 1,
-                                  viewportFraction: 0.5,
-                                  disableCenter: true,
-                                  enlargeCenterPage: true,
-                                  enlargeFactor: 0.25,
-                                  enableInfiniteScroll: true,
-                                  scrollDirection: Axis.horizontal,
-                                  autoPlay: false,
-                                  onPageChanged: (index, _) =>
-                                      _model.carouselCurrentIndex = index,
-                                ),
                               ),
                             ),
-                          ],
+                            SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  Container(
+                                    width: double.infinity,
+                                    decoration: const BoxDecoration(),
+                                    child: Container(
+                                      width: double.infinity,
+                                      color: FlutterFlowTheme.of(context)
+                                          .primaryBackground,
+                                      child: ExpandableNotifier(
+                                        controller: _model
+                                            .expandableExpandableController3,
+                                        child: ExpandablePanel(
+                                          header: Text(
+                                            'Packages',
+                                            style: FlutterFlowTheme.of(context)
+                                                .labelLarge
+                                                .override(
+                                                  fontFamily: 'Readex Pro',
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .primaryText,
+                                                  letterSpacing: 0.0,
+                                                ),
+                                          ),
+                                          collapsed: Container(
+                                            width: double.infinity,
+                                            height: 2.0,
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primaryBackground,
+                                            ),
+                                          ),
+                                          expanded: Builder(
+                                            builder: (context) {
+                                              final packageDetails =
+                                                  VenuesGroup.venuePackageCall
+                                                          .details(
+                                                            (_model.apiResultVenuePackage
+                                                                    ?.jsonBody ??
+                                                                ''),
+                                                          )
+                                                          ?.toList() ??
+                                                      [];
+                                              return Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: List.generate(
+                                                    packageDetails.length,
+                                                    (packageDetailsIndex) {
+                                                  final packageDetailsItem =
+                                                      packageDetails[
+                                                          packageDetailsIndex];
+                                                  return Container(
+                                                    width: double.infinity,
+                                                    decoration: const BoxDecoration(
+                                                      color: Color(0xFFECECDF),
+                                                    ),
+                                                    child: Column(
+                                                      mainAxisSize:
+                                                          MainAxisSize.max,
+                                                      children: [
+                                                        Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          children: [
+                                                            Text(
+                                                              'Hello World',
+                                                              style: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .bodyLarge
+                                                                  .override(
+                                                                    fontFamily:
+                                                                        'Readex Pro',
+                                                                    letterSpacing:
+                                                                        0.0,
+                                                                  ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          children: [
+                                                            Text(
+                                                              'Hello World',
+                                                              style: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .bodyLarge
+                                                                  .override(
+                                                                    fontFamily:
+                                                                        'Readex Pro',
+                                                                    letterSpacing:
+                                                                        0.0,
+                                                                  ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .end,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            FFButtonWidget(
+                                                              onPressed: () {
+                                                                print(
+                                                                    'Button pressed ...');
+                                                              },
+                                                              text:
+                                                                  'Show Details',
+                                                              icon: const Icon(
+                                                                Icons
+                                                                    .shopping_cart_rounded,
+                                                                size: 15.0,
+                                                              ),
+                                                              options:
+                                                                  FFButtonOptions(
+                                                                height: 32.0,
+                                                                padding: const EdgeInsetsDirectional
+                                                                    .fromSTEB(
+                                                                        24.0,
+                                                                        0.0,
+                                                                        24.0,
+                                                                        0.0),
+                                                                iconPadding:
+                                                                    const EdgeInsetsDirectional
+                                                                        .fromSTEB(
+                                                                            0.0,
+                                                                            0.0,
+                                                                            0.0,
+                                                                            0.0),
+                                                                color: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .primaryBackground,
+                                                                textStyle: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .titleSmall
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'Readex Pro',
+                                                                      color: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .primaryText,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                    ),
+                                                                elevation: 3.0,
+                                                                borderSide:
+                                                                    const BorderSide(
+                                                                  color: Colors
+                                                                      .transparent,
+                                                                  width: 1.0,
+                                                                ),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            8.0),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                }).divide(
+                                                    const SizedBox(height: 6.0)),
+                                              );
+                                            },
+                                          ),
+                                          theme: ExpandableThemeData(
+                                            tapHeaderToExpand: true,
+                                            tapBodyToExpand: true,
+                                            tapBodyToCollapse: true,
+                                            headerAlignment:
+                                                ExpandablePanelHeaderAlignment
+                                                    .center,
+                                            hasIcon: true,
+                                            iconColor:
+                                                FlutterFlowTheme.of(context)
+                                                    .primaryText,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  Container(
+                                    decoration: const BoxDecoration(),
+                                    child: Container(
+                                      width: double.infinity,
+                                      color: FlutterFlowTheme.of(context)
+                                          .primaryBackground,
+                                      child: ExpandableNotifier(
+                                        controller: _model
+                                            .expandableExpandableController4,
+                                        child: ExpandablePanel(
+                                          header: Text(
+                                            'Hall/Space',
+                                            style: FlutterFlowTheme.of(context)
+                                                .labelLarge
+                                                .override(
+                                                  fontFamily: 'Readex Pro',
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .primaryText,
+                                                  letterSpacing: 0.0,
+                                                ),
+                                          ),
+                                          collapsed: Container(),
+                                          expanded: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+                                                style: FlutterFlowTheme.of(
+                                                        context)
+                                                    .bodyMedium
+                                                    .override(
+                                                      fontFamily: 'Readex Pro',
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                              ),
+                                            ],
+                                          ),
+                                          theme: ExpandableThemeData(
+                                            tapHeaderToExpand: true,
+                                            tapBodyToExpand: true,
+                                            tapBodyToCollapse: true,
+                                            headerAlignment:
+                                                ExpandablePanelHeaderAlignment
+                                                    .center,
+                                            hasIcon: true,
+                                            iconColor:
+                                                FlutterFlowTheme.of(context)
+                                                    .primaryText,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  Container(
+                                    decoration: const BoxDecoration(),
+                                    child: Container(
+                                      width: double.infinity,
+                                      color: FlutterFlowTheme.of(context)
+                                          .primaryBackground,
+                                      child: ExpandableNotifier(
+                                        controller: _model
+                                            .expandableExpandableController5,
+                                        child: ExpandablePanel(
+                                          header: Text(
+                                            'PayMent',
+                                            style: FlutterFlowTheme.of(context)
+                                                .labelLarge
+                                                .override(
+                                                  fontFamily: 'Readex Pro',
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .primaryText,
+                                                  letterSpacing: 0.0,
+                                                ),
+                                          ),
+                                          collapsed: Container(
+                                            width: double.infinity,
+                                            height: 1.0,
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .secondaryBackground,
+                                            ),
+                                          ),
+                                          expanded: Padding(
+                                            padding:
+                                                const EdgeInsetsDirectional.fromSTEB(
+                                                    16.0, 0.0, 0.0, 2.0),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                if (VenuesGroup.venueDetailsCall
+                                                            .paymentMode(
+                                                          (_model.apiResultVenueResult
+                                                                  ?.jsonBody ??
+                                                              ''),
+                                                        ) !=
+                                                        null &&
+                                                    VenuesGroup.venueDetailsCall
+                                                            .paymentMode(
+                                                          (_model.apiResultVenueResult
+                                                                  ?.jsonBody ??
+                                                              ''),
+                                                        ) !=
+                                                        '')
+                                                  SingleChildScrollView(
+                                                    scrollDirection:
+                                                        Axis.horizontal,
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.max,
+                                                      children: [
+                                                        Text(
+                                                          'Payment Mode : ',
+                                                          style: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .bodyMedium
+                                                              .override(
+                                                                fontFamily:
+                                                                    'Readex Pro',
+                                                                letterSpacing:
+                                                                    0.0,
+                                                              ),
+                                                        ),
+                                                        Text(
+                                                          valueOrDefault<
+                                                              String>(
+                                                            VenuesGroup
+                                                                .venueDetailsCall
+                                                                .paymentMode(
+                                                              (_model.apiResultVenueResult
+                                                                      ?.jsonBody ??
+                                                                  ''),
+                                                            ),
+                                                            '....',
+                                                          ),
+                                                          style: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .bodyMedium
+                                                              .override(
+                                                                fontFamily:
+                                                                    'Readex Pro',
+                                                                letterSpacing:
+                                                                    0.0,
+                                                              ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                if (VenuesGroup.venueDetailsCall
+                                                            .cardAccepted(
+                                                          (_model.apiResultVenueResult
+                                                                  ?.jsonBody ??
+                                                              ''),
+                                                        ) !=
+                                                        null &&
+                                                    VenuesGroup.venueDetailsCall
+                                                            .cardAccepted(
+                                                          (_model.apiResultVenueResult
+                                                                  ?.jsonBody ??
+                                                              ''),
+                                                        ) !=
+                                                        '')
+                                                  SingleChildScrollView(
+                                                    scrollDirection:
+                                                        Axis.horizontal,
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.max,
+                                                      children: [
+                                                        Text(
+                                                          'Card : ',
+                                                          style: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .bodyMedium
+                                                              .override(
+                                                                fontFamily:
+                                                                    'Readex Pro',
+                                                                letterSpacing:
+                                                                    0.0,
+                                                              ),
+                                                        ),
+                                                        Text(
+                                                          valueOrDefault<
+                                                              String>(
+                                                            VenuesGroup
+                                                                .venueDetailsCall
+                                                                .cardAccepted(
+                                                              (_model.apiResultVenueResult
+                                                                      ?.jsonBody ??
+                                                                  ''),
+                                                            ),
+                                                            '......',
+                                                          ),
+                                                          style: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .bodyMedium
+                                                              .override(
+                                                                fontFamily:
+                                                                    'Readex Pro',
+                                                                letterSpacing:
+                                                                    0.0,
+                                                              ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                              ]
+                                                  .divide(const SizedBox(height: 6.0))
+                                                  .addToStart(
+                                                      const SizedBox(height: 6.0))
+                                                  .addToEnd(
+                                                      const SizedBox(height: 6.0)),
+                                            ),
+                                          ),
+                                          theme: ExpandableThemeData(
+                                            tapHeaderToExpand: true,
+                                            tapBodyToExpand: true,
+                                            tapBodyToCollapse: true,
+                                            headerAlignment:
+                                                ExpandablePanelHeaderAlignment
+                                                    .center,
+                                            hasIcon: true,
+                                            iconColor:
+                                                FlutterFlowTheme.of(context)
+                                                    .primaryText,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  Container(
+                                    decoration: const BoxDecoration(),
+                                    child: Container(
+                                      width: double.infinity,
+                                      color: FlutterFlowTheme.of(context)
+                                          .primaryBackground,
+                                      child: ExpandableNotifier(
+                                        controller: _model
+                                            .expandableExpandableController6,
+                                        child: ExpandablePanel(
+                                          header: Text(
+                                            'Review',
+                                            style: FlutterFlowTheme.of(context)
+                                                .labelLarge
+                                                .override(
+                                                  fontFamily: 'Readex Pro',
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .primaryText,
+                                                  letterSpacing: 0.0,
+                                                ),
+                                          ),
+                                          collapsed: Container(),
+                                          expanded: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+                                                style: FlutterFlowTheme.of(
+                                                        context)
+                                                    .bodyMedium
+                                                    .override(
+                                                      fontFamily: 'Readex Pro',
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                              ),
+                                            ],
+                                          ),
+                                          theme: ExpandableThemeData(
+                                            tapHeaderToExpand: true,
+                                            tapBodyToExpand: true,
+                                            tapBodyToCollapse: true,
+                                            headerAlignment:
+                                                ExpandablePanelHeaderAlignment
+                                                    .center,
+                                            hasIcon: true,
+                                            iconColor:
+                                                FlutterFlowTheme.of(context)
+                                                    .primaryText,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Column(
+                              mainAxisSize: MainAxisSize.max,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                FFButtonWidget(
+                                  onPressed: () {
+                                    print('Button pressed ...');
+                                  },
+                                  text: 'Similar Venues',
+                                  options: FFButtonOptions(
+                                    width: double.infinity,
+                                    height: 40.0,
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
+                                        24.0, 0.0, 24.0, 0.0),
+                                    iconPadding: const EdgeInsetsDirectional.fromSTEB(
+                                        0.0, 0.0, 0.0, 0.0),
+                                    color: FlutterFlowTheme.of(context)
+                                        .primaryBackground,
+                                    textStyle: FlutterFlowTheme.of(context)
+                                        .labelLarge
+                                        .override(
+                                          fontFamily: 'Readex Pro',
+                                          letterSpacing: 0.0,
+                                        ),
+                                    elevation: 3.0,
+                                    borderSide: const BorderSide(
+                                      color: Colors.transparent,
+                                      width: 1.0,
+                                    ),
+                                    borderRadius: BorderRadius.circular(4.0),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 128.0,
+                                  child: CarouselSlider(
+                                    items: [
+                                      Container(
+                                        width: double.infinity,
+                                        decoration: BoxDecoration(
+                                          color: FlutterFlowTheme.of(context)
+                                              .tertiary,
+                                        ),
+                                        child: Padding(
+                                          padding:
+                                              const EdgeInsetsDirectional.fromSTEB(
+                                                  2.0, 0.0, 2.0, 0.0),
+                                          child: SingleChildScrollView(
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          8.0),
+                                                  child: Image.network(
+                                                    'https://picsum.photos/seed/203/600',
+                                                    width: double.infinity,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                ),
+                                                RatingBar.builder(
+                                                  onRatingUpdate: (newValue) =>
+                                                      setState(() => _model
+                                                              .ratingBarValue3 =
+                                                          newValue),
+                                                  itemBuilder:
+                                                      (context, index) => Icon(
+                                                    Icons.star_rounded,
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .primaryText,
+                                                  ),
+                                                  direction: Axis.horizontal,
+                                                  initialRating: _model
+                                                      .ratingBarValue3 ??= 3.0,
+                                                  unratedColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .alternate,
+                                                  itemCount: 5,
+                                                  itemSize: 17.0,
+                                                  glowColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .primaryText,
+                                                ),
+                                                Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.max,
+                                                  children: [
+                                                    Text(
+                                                      'Hello World',
+                                                      style:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .bodyMedium
+                                                              .override(
+                                                                fontFamily:
+                                                                    'Readex Pro',
+                                                                color: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .primaryText,
+                                                                fontSize: 14.0,
+                                                                letterSpacing:
+                                                                    0.0,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal,
+                                                              ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                        child: Image.network(
+                                          'https://picsum.photos/seed/446/600',
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                        child: Image.network(
+                                          'https://picsum.photos/seed/41/600',
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                        child: Image.network(
+                                          'https://picsum.photos/seed/545/600',
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ],
+                                    carouselController:
+                                        _model.carouselController ??=
+                                            CarouselController(),
+                                    options: CarouselOptions(
+                                      initialPage: 1,
+                                      viewportFraction: 0.5,
+                                      disableCenter: true,
+                                      enlargeCenterPage: true,
+                                      enlargeFactor: 0.25,
+                                      enableInfiniteScroll: true,
+                                      scrollDirection: Axis.horizontal,
+                                      autoPlay: false,
+                                      onPageChanged: (index, _) =>
+                                          _model.carouselCurrentIndex = index,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ].divide(const SizedBox(height: 7.0)),
                         ),
-                      ].divide(const SizedBox(height: 7.0)),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),

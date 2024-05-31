@@ -1,3 +1,4 @@
+import '/components/celebration_type_compoent_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'home_page_widget.dart' show HomePageWidget;
 import 'package:flutter/material.dart';
@@ -10,8 +11,6 @@ class HomePageModel extends FlutterFlowModel<HomePageWidget> {
   ///  State fields for stateful widgets in this page.
 
   final unfocusNode = FocusNode();
-  // Stores action output result for [Custom Action - determinePosition] action in HomePage widget.
-  LatLng? currentPosition;
   // State field(s) for TabBar widget.
   TabController? tabBarController;
   int get tabBarCurrentIndex =>
@@ -22,9 +21,14 @@ class HomePageModel extends FlutterFlowModel<HomePageWidget> {
   TextEditingController? venueSearchTextWigetTextController;
   String? Function(BuildContext, String?)?
       venueSearchTextWigetTextControllerValidator;
+  // Model for celebrationTypeCompoent component.
+  late CelebrationTypeCompoentModel celebrationTypeCompoentModel;
 
   @override
-  void initState(BuildContext context) {}
+  void initState(BuildContext context) {
+    celebrationTypeCompoentModel =
+        createModel(context, () => CelebrationTypeCompoentModel());
+  }
 
   @override
   void dispose() {
@@ -32,5 +36,7 @@ class HomePageModel extends FlutterFlowModel<HomePageWidget> {
     tabBarController?.dispose();
     venueSearchTextWigetFocusNode?.dispose();
     venueSearchTextWigetTextController?.dispose();
+
+    celebrationTypeCompoentModel.dispose();
   }
 }

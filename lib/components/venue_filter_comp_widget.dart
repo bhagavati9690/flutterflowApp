@@ -113,7 +113,7 @@ class _VenueFilterCompWidgetState extends State<VenueFilterCompWidget> {
       padding: const EdgeInsets.all(8.0),
       child: Container(
         decoration: BoxDecoration(
-          color: FlutterFlowTheme.of(context).primaryBackground,
+          color: FlutterFlowTheme.of(context).secondaryBackground,
         ),
         child: Padding(
           padding: const EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 0.0, 0.0),
@@ -121,8 +121,8 @@ class _VenueFilterCompWidgetState extends State<VenueFilterCompWidget> {
             mainAxisSize: MainAxisSize.max,
             children: [
               Container(
-                decoration: const BoxDecoration(
-                  color: Color(0xD7EEEEF5),
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).secondaryBackground,
                 ),
                 child: Padding(
                   padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 8.0),
@@ -146,7 +146,8 @@ class _VenueFilterCompWidgetState extends State<VenueFilterCompWidget> {
                               8.0, 0.0, 24.0, 0.0),
                           iconPadding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 0.0),
-                          color: const Color(0xD7EEEEF5),
+                          color:
+                              FlutterFlowTheme.of(context).secondaryBackground,
                           textStyle: FlutterFlowTheme.of(context)
                               .titleMedium
                               .override(
@@ -154,7 +155,10 @@ class _VenueFilterCompWidgetState extends State<VenueFilterCompWidget> {
                                 color: FlutterFlowTheme.of(context).primaryText,
                                 letterSpacing: 0.0,
                               ),
-                          elevation: 3.0,
+                          borderSide: BorderSide(
+                            color: FlutterFlowTheme.of(context)
+                                .secondaryBackground,
+                          ),
                           borderRadius: BorderRadius.circular(0.0),
                         ),
                       ),
@@ -162,7 +166,8 @@ class _VenueFilterCompWidgetState extends State<VenueFilterCompWidget> {
                         borderRadius: 20.0,
                         borderWidth: 1.0,
                         buttonSize: 40.0,
-                        fillColor: const Color(0xD7EEEEF5),
+                        fillColor:
+                            FlutterFlowTheme.of(context).secondaryBackground,
                         icon: Icon(
                           Icons.close_rounded,
                           color: FlutterFlowTheme.of(context).primaryText,
@@ -1410,8 +1415,8 @@ class _VenueFilterCompWidgetState extends State<VenueFilterCompWidget> {
               Padding(
                 padding: const EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
                 child: Container(
-                  decoration: const BoxDecoration(
-                    color: Color(0xD7EEEEF5),
+                  decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context).secondaryBackground,
                   ),
                   child: Padding(
                     padding:
@@ -1482,7 +1487,8 @@ class _VenueFilterCompWidgetState extends State<VenueFilterCompWidget> {
                                 24.0, 0.0, 24.0, 0.0),
                             iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 0.0),
-                            color: const Color(0xD7EEEEF5),
+                            color: FlutterFlowTheme.of(context)
+                                .secondaryBackground,
                             textStyle: FlutterFlowTheme.of(context)
                                 .titleSmall
                                 .override(
@@ -1493,7 +1499,7 @@ class _VenueFilterCompWidgetState extends State<VenueFilterCompWidget> {
                                 ),
                             borderSide: BorderSide(
                               color: FlutterFlowTheme.of(context)
-                                  .primaryBackground,
+                                  .secondaryBackground,
                             ),
                             borderRadius: BorderRadius.circular(8.0),
                           ),

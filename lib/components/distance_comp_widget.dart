@@ -43,7 +43,7 @@ class _DistanceCompWidgetState extends State<DistanceCompWidget> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).primaryText,
+        color: FlutterFlowTheme.of(context).secondaryBackground,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -63,8 +63,7 @@ class _DistanceCompWidgetState extends State<DistanceCompWidget> {
                     'Distance',
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           fontFamily: 'Readex Pro',
-                          color:
-                              FlutterFlowTheme.of(context).secondaryBackground,
+                          color: FlutterFlowTheme.of(context).primaryText,
                           fontSize: 17.0,
                           letterSpacing: 0.0,
                         ),
@@ -77,7 +76,7 @@ class _DistanceCompWidgetState extends State<DistanceCompWidget> {
                     fillColor: const Color(0x5895A1AC),
                     icon: Icon(
                       Icons.clear,
-                      color: FlutterFlowTheme.of(context).secondaryBackground,
+                      color: FlutterFlowTheme.of(context).primaryText,
                       size: 24.0,
                     ),
                     onPressed: () async {
@@ -112,22 +111,21 @@ class _DistanceCompWidgetState extends State<DistanceCompWidget> {
                   optionWidth: 276.0,
                   textStyle: FlutterFlowTheme.of(context).bodySmall.override(
                         fontFamily: 'Readex Pro',
-                        color: FlutterFlowTheme.of(context).primaryBackground,
+                        color: FlutterFlowTheme.of(context).primaryText,
                         fontSize: 14.0,
                         letterSpacing: 0.0,
                       ),
-                  selectedTextStyle: FlutterFlowTheme.of(context)
-                      .bodyLarge
-                      .override(
-                        fontFamily: 'Readex Pro',
-                        color: FlutterFlowTheme.of(context).primaryBackground,
-                        letterSpacing: 0.0,
-                      ),
+                  selectedTextStyle:
+                      FlutterFlowTheme.of(context).bodyLarge.override(
+                            fontFamily: 'Readex Pro',
+                            color: FlutterFlowTheme.of(context).primaryText,
+                            letterSpacing: 0.0,
+                          ),
                   textPadding:
                       const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 150.0, 0.0),
                   buttonPosition: RadioButtonPosition.right,
                   direction: Axis.vertical,
-                  radioButtonColor: FlutterFlowTheme.of(context).alternate,
+                  radioButtonColor: FlutterFlowTheme.of(context).primaryText,
                   inactiveRadioButtonColor:
                       FlutterFlowTheme.of(context).secondaryText,
                   toggleable: false,
@@ -145,31 +143,34 @@ class _DistanceCompWidgetState extends State<DistanceCompWidget> {
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                FFButtonWidget(
-                  onPressed: () async {
-                    Navigator.pop(context, _model.distanceSelectionValue);
-                  },
-                  text: 'Apply',
-                  options: FFButtonOptions(
-                    width: MediaQuery.sizeOf(context).width * 0.991,
-                    height: 38.0,
-                    padding:
-                        const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
-                    iconPadding:
-                        const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                    color: const Color(0xEED1D3D6),
-                    textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                          fontFamily: 'Readex Pro',
-                          color:
-                              FlutterFlowTheme.of(context).secondaryBackground,
-                          letterSpacing: 0.0,
-                        ),
-                    elevation: 3.0,
-                    borderSide: const BorderSide(
-                      color: Colors.transparent,
-                      width: 1.0,
+                Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 10.0),
+                  child: FFButtonWidget(
+                    onPressed: () async {
+                      Navigator.pop(context, _model.distanceSelectionValue);
+                    },
+                    text: 'Apply',
+                    options: FFButtonOptions(
+                      width: MediaQuery.sizeOf(context).width * 0.991,
+                      height: 38.0,
+                      padding:
+                          const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+                      iconPadding:
+                          const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                      color: const Color(0xEED1D3D6),
+                      textStyle:
+                          FlutterFlowTheme.of(context).titleSmall.override(
+                                fontFamily: 'Readex Pro',
+                                color: FlutterFlowTheme.of(context).primaryText,
+                                letterSpacing: 0.0,
+                              ),
+                      elevation: 3.0,
+                      borderSide: const BorderSide(
+                        color: Colors.transparent,
+                        width: 1.0,
+                      ),
+                      borderRadius: BorderRadius.circular(8.0),
                     ),
-                    borderRadius: BorderRadius.circular(8.0),
                   ),
                 ),
               ],

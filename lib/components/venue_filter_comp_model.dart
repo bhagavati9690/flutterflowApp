@@ -22,20 +22,35 @@ class VenueFilterCompModel extends FlutterFlowModel<VenueFilterCompWidget> {
   late ExpandableController expandableExpandableController1;
 
   // State field(s) for venueTypeSelections widget.
-  List<String>? venueTypeSelectionsValues;
   FormFieldController<List<String>>? venueTypeSelectionsValueController;
+
+  List<String>? get venueTypeSelectionsValues =>
+      venueTypeSelectionsValueController?.value;
+  set venueTypeSelectionsValues(List<String>? v) =>
+      venueTypeSelectionsValueController?.value = v;
+
   // State field(s) for Expandable widget.
   late ExpandableController expandableExpandableController2;
 
   // State field(s) for activityTypeSelections widget.
-  List<String>? activityTypeSelectionsValues;
   FormFieldController<List<String>>? activityTypeSelectionsValueController;
+
+  List<String>? get activityTypeSelectionsValues =>
+      activityTypeSelectionsValueController?.value;
+  set activityTypeSelectionsValues(List<String>? v) =>
+      activityTypeSelectionsValueController?.value = v;
+
   // State field(s) for Expandable widget.
   late ExpandableController expandableExpandableController3;
 
   // State field(s) for sportSelections widget.
-  List<String>? sportSelectionsValues;
   FormFieldController<List<String>>? sportSelectionsValueController;
+
+  List<String>? get sportSelectionsValues =>
+      sportSelectionsValueController?.value;
+  set sportSelectionsValues(List<String>? v) =>
+      sportSelectionsValueController?.value = v;
+
   // State field(s) for Expandable widget.
   late ExpandableController expandableExpandableController4;
 
@@ -48,39 +63,67 @@ class VenueFilterCompModel extends FlutterFlowModel<VenueFilterCompWidget> {
   late ExpandableController expandableExpandableController5;
 
   // State field(s) for rankSelections widget.
-  List<String>? rankSelectionsValues;
   FormFieldController<List<String>>? rankSelectionsValueController;
+
+  List<String>? get rankSelectionsValues =>
+      rankSelectionsValueController?.value;
+  set rankSelectionsValues(List<String>? v) =>
+      rankSelectionsValueController?.value = v;
+
   // State field(s) for Expandable widget.
   late ExpandableController expandableExpandableController6;
 
   // State field(s) for ageSelections widget.
-  List<String>? ageSelectionsValues;
   FormFieldController<List<String>>? ageSelectionsValueController;
+
+  List<String>? get ageSelectionsValues => ageSelectionsValueController?.value;
+  set ageSelectionsValues(List<String>? v) =>
+      ageSelectionsValueController?.value = v;
+
   // State field(s) for Expandable widget.
   late ExpandableController expandableExpandableController7;
 
   // State field(s) for townSelections widget.
-  List<String>? townSelectionsValues;
   FormFieldController<List<String>>? townSelectionsValueController;
+
+  List<String>? get townSelectionsValues =>
+      townSelectionsValueController?.value;
+  set townSelectionsValues(List<String>? v) =>
+      townSelectionsValueController?.value = v;
+
   // State field(s) for Expandable widget.
   late ExpandableController expandableExpandableController8;
 
   // State field(s) for capacitytySelections widget.
-  List<String>? capacitytySelectionsValues;
   FormFieldController<List<String>>? capacitytySelectionsValueController;
+
+  List<String>? get capacitytySelectionsValues =>
+      capacitytySelectionsValueController?.value;
+  set capacitytySelectionsValues(List<String>? v) =>
+      capacitytySelectionsValueController?.value = v;
+
   // State field(s) for Expandable widget.
   late ExpandableController expandableExpandableController9;
 
   // State field(s) for genderSelections widget.
-  List<String>? genderSelectionsValues;
   FormFieldController<List<String>>? genderSelectionsValueController;
+
+  List<String>? get genderSelectionsValues =>
+      genderSelectionsValueController?.value;
+  set genderSelectionsValues(List<String>? v) =>
+      genderSelectionsValueController?.value = v;
+
   // State field(s) for Expandable widget.
   late ExpandableController expandableExpandableController10;
 
   // State field(s) for activityTypeCatgaorySelections widget.
-  List<String>? activityTypeCatgaorySelectionsValues;
   FormFieldController<List<String>>?
       activityTypeCatgaorySelectionsValueController;
+
+  List<String>? get activityTypeCatgaorySelectionsValues =>
+      activityTypeCatgaorySelectionsValueController?.value;
+  set activityTypeCatgaorySelectionsValues(List<String>? v) =>
+      activityTypeCatgaorySelectionsValueController?.value = v;
 
   @override
   void initState(BuildContext context) {}

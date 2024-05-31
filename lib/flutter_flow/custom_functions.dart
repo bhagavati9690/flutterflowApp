@@ -449,3 +449,11 @@ String? suggestionCursorInput(
   print(jsonEncode(jsonData));
   return jsonEncode(jsonData);
 }
+
+int? stringToIntegerConversion(String? input) {
+  // take a string and convert in integer
+  if (input == null) {
+    return 0;
+  }
+  return int.tryParse(input);
+}

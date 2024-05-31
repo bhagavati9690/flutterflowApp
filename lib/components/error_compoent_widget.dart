@@ -2,18 +2,18 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'card13_podcast_model.dart';
-export 'card13_podcast_model.dart';
+import 'error_compoent_model.dart';
+export 'error_compoent_model.dart';
 
-class Card13PodcastWidget extends StatefulWidget {
-  const Card13PodcastWidget({super.key});
+class ErrorCompoentWidget extends StatefulWidget {
+  const ErrorCompoentWidget({super.key});
 
   @override
-  State<Card13PodcastWidget> createState() => _Card13PodcastWidgetState();
+  State<ErrorCompoentWidget> createState() => _ErrorCompoentWidgetState();
 }
 
-class _Card13PodcastWidgetState extends State<Card13PodcastWidget> {
-  late Card13PodcastModel _model;
+class _ErrorCompoentWidgetState extends State<ErrorCompoentWidget> {
+  late ErrorCompoentModel _model;
 
   @override
   void setState(VoidCallback callback) {
@@ -24,7 +24,7 @@ class _Card13PodcastWidgetState extends State<Card13PodcastWidget> {
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => Card13PodcastModel());
+    _model = createModel(context, () => ErrorCompoentModel());
 
     WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
   }
@@ -40,7 +40,7 @@ class _Card13PodcastWidgetState extends State<Card13PodcastWidget> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).primaryText,
+        color: FlutterFlowTheme.of(context).secondaryBackground,
       ),
       child: Stack(
         children: [

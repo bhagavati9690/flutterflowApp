@@ -120,6 +120,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: 'mptest',
           path: '/mptest',
           builder: (context, params) => const MptestWidget(),
+        ),
+        FFRoute(
+          name: 'pp',
+          path: '/pp',
+          builder: (context, params) => const PpWidget(),
         )
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );

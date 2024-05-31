@@ -1,8 +1,8 @@
 import '/flutter_flow/flutter_flow_util.dart';
-import 'card13_podcast_widget.dart' show Card13PodcastWidget;
+import 'error_compoent_widget.dart' show ErrorCompoentWidget;
 import 'package:flutter/material.dart';
 
-class Card13PodcastModel extends FlutterFlowModel<Card13PodcastWidget> {
+class ErrorCompoentModel extends FlutterFlowModel<ErrorCompoentWidget> {
   @override
   void initState(BuildContext context) {}
 
