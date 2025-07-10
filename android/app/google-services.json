@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "843864992614",
+    "project_id": "clbxmobileipbased",
+    "storage_bucket": "clbxmobileipbased.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:843864992614:android:5b1f676cc54ade7c3ab6a7",
+        "android_client_info": {
+          "package_name": "com.celebratix.clbxmobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAE4Q1jF6HJL5CbrfP_wA6vt2ZMIKay6KI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

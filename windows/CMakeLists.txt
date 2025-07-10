@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
-project(celebratix LANGUAGES CXX)
+project(clbxmobile LANGUAGES CXX)
 
-set(BINARY_NAME "celebratix")
+set(BINARY_NAME "clbxmobile")
 
 cmake_policy(SET CMP0063 NEW)
 

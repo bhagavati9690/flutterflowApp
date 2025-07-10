@@ -1,8 +1,21 @@
 export '/backend/schema/util/schema_util.dart';
 
+export 'address_struct.dart';
+export 'all_resource_type_struct.dart';
+export 'contact_struct.dart';
+export 'date_struct.dart';
+export 'empty_list_struct.dart';
+export 'images_struct.dart';
 export 'marker_info_struct.dart';
+export 'name_id_searchable_struct.dart';
+export 'stringb_struct.dart';
+export 'user_struct.dart';
+export 'venue_edit_params_template_struct.dart';
+export 'cake_filter_data_struct.dart';
+export 'client_query_struct.dart';
 export 'cursor_struct.dart';
+export 'custom_data_for_cake_struct.dart';
 export 'filter_selection_data_struct.dart';
-export 'pagination_struct.dart';
-export 'photo_query_struct.dart';
+export 'location_return_struct.dart';
+export 'place_type_selected_list_struct.dart';
 export 'sorting_data_struct.dart';

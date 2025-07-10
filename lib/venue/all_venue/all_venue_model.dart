@@ -1,6 +1,10 @@
 import '/backend/api_requests/api_calls.dart';
 import '/backend/schema/structs/index.dart';
+import '/compoents/common_comp/page_viewc_o_m_p/page_viewc_o_m_p_widget.dart';
+import '/compoents/common_comp/rating_comp/rating_comp_widget.dart';
+import '/components/location_search_comp_all_vendor_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/index.dart';
 import 'all_venue_widget.dart' show AllVenueWidget;
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -136,67 +140,103 @@ class AllVenueModel extends FlutterFlowModel<AllVenueWidget> {
 
   bool showSerchResult = false;
 
+  int? resultCount;
+
+  String sortOrder = 'desc';
+
+  String sortType = 'relevance';
+
+  String? placeTypeSelectedId;
+
+  String resourceId = '2124';
+
+  String? placeTypeSeletedName;
+
+  bool pageLoad = false;
+
   ///  State fields for stateful widgets in this page.
 
-  final unfocusNode = FocusNode();
-  // State field(s) for SearchField widget.
-  final searchFieldKey = GlobalKey();
-  FocusNode? searchFieldFocusNode;
-  TextEditingController? searchFieldTextController;
-  String? searchFieldSelectedOption;
-  String? Function(BuildContext, String?)? searchFieldTextControllerValidator;
-  Completer<ApiCallResponse>? apiRequestCompleter2;
+  // Model for locationSearchCompAllVendor component.
+  late LocationSearchCompAllVendorModel locationSearchCompAllVendorModel;
+  // Stores action output result for [Alert Dialog - Custom Dialog] action in locationSearchCompAllVendor widget.
+  LocationReturnStruct? locationUpdateOutput;
+  // Stores action output result for [Backend Call - API (assignLocation)] action in locationSearchCompAllVendor widget.
+  ApiCallResponse? assignLocation;
+  // Stores action output result for [Backend Call - API (VisibleTab)] action in locationSearchCompAllVendor widget.
+  ApiCallResponse? visibleTabResponse;
   // Stores action output result for [Alert Dialog - Custom Dialog] action in Button widget.
-  String? distanceSelectionOutput;
+  String? distanceSelection;
+  // State field(s) for VenueSearchField widget.
+  FocusNode? venueSearchFieldFocusNode;
+  TextEditingController? venueSearchFieldTextController;
+  String? Function(BuildContext, String?)?
+      venueSearchFieldTextControllerValidator;
+  Completer<ApiCallResponse>? apiRequestCompleter1;
+  // Stores action output result for [Backend Call - API (getPartyPlaceType)] action in Button widget.
+  ApiCallResponse? partyplacesList;
+  // Stores action output result for [Alert Dialog - Custom Dialog] action in Button widget.
+  PlaceTypeSelectedListStruct? placeSelectionAltertBoxOutput;
   // Stores action output result for [Alert Dialog - Custom Dialog] action in Button widget.
   SortingDataStruct? viewSelectionOutput;
-  // Stores action output result for [Alert Dialog - Custom Dialog] action in Button widget.
-  String? placeSelectionOutput;
   // State field(s) for VenueListView widget.
 
   PagingController<ApiPagingParams, dynamic>? venueListViewPagingController;
   Function(ApiPagingParams nextPageMarker)? venueListViewApiCall;
 
-  // Stores action output result for [Alert Dialog - Custom Dialog] action in IconButton widget.
+  // Models for PageViewcOMP dynamic component.
+  late FlutterFlowDynamicModels<PageViewcOMPModel> pageViewcOMPModels;
+  // Models for ratingComp dynamic component.
+  late FlutterFlowDynamicModels<RatingCompModel> ratingCompModels;
+  // Stores action output result for [Backend Call - API (getAllVenuesMap)] action in mapIconButton widget.
+  ApiCallResponse? mapoutPut;
+  // Stores action output result for [Alert Dialog - Custom Dialog] action in Icon widget.
   FilterSelectionDataStruct? aggreSelection;
 
   @override
-  void initState(BuildContext context) {}
+  void initState(BuildContext context) {
+    locationSearchCompAllVendorModel =
+        createModel(context, () => LocationSearchCompAllVendorModel());
+    pageViewcOMPModels = FlutterFlowDynamicModels(() => PageViewcOMPModel());
+    ratingCompModels = FlutterFlowDynamicModels(() => RatingCompModel());
+  }
 
   @override
   void dispose() {
-    unfocusNode.dispose();
-    searchFieldFocusNode?.dispose();
+    locationSearchCompAllVendorModel.dispose();
+    venueSearchFieldFocusNode?.dispose();
+    venueSearchFieldTextController?.dispose();
 
     venueListViewPagingController?.dispose();
+    pageViewcOMPModels.dispose();
+    ratingCompModels.dispose();
   }
 
   /// Additional helper methods.
-  Future waitForApiRequestCompleted2({
-    double minWait = 0,
-    double maxWait = double.infinity,
-  }) async {
-    final stopwatch = Stopwatch()..start();
-    while (true) {
-      await Future.delayed(const Duration(milliseconds: 50));
-      final timeElapsed = stopwatch.elapsedMilliseconds;
-      final requestComplete = apiRequestCompleter2?.isCompleted ?? false;
-      if (timeElapsed > maxWait || (requestComplete && timeElapsed > minWait)) {
-        break;
-      }
-    }
-  }
-
   Future waitForOnePageForVenueListView({
     double minWait = 0,
     double maxWait = double.infinity,
   }) async {
     final stopwatch = Stopwatch()..start();
     while (true) {
-      await Future.delayed(const Duration(milliseconds: 50));
+      await Future.delayed(Duration(milliseconds: 50));
       final timeElapsed = stopwatch.elapsedMilliseconds;
       final requestComplete =
           (venueListViewPagingController?.nextPageKey?.nextPageNumber ?? 0) > 0;
+      if (timeElapsed > maxWait || (requestComplete && timeElapsed > minWait)) {
+        break;
+      }
+    }
+  }
+
+  Future waitForApiRequestCompleted1({
+    double minWait = 0,
+    double maxWait = double.infinity,
+  }) async {
+    final stopwatch = Stopwatch()..start();
+    while (true) {
+      await Future.delayed(Duration(milliseconds: 50));
+      final timeElapsed = stopwatch.elapsedMilliseconds;
+      final requestComplete = apiRequestCompleter1?.isCompleted ?? false;
       if (timeElapsed > maxWait || (requestComplete && timeElapsed > minWait)) {
         break;
       }
@@ -235,7 +275,7 @@ class AllVenueModel extends FlutterFlowModel<AllVenueWidget> {
         final newNumItems = nextPageMarker.numItems + pageItems.length;
         venueListViewPagingController?.appendPage(
           pageItems,
-          (pageItems.isNotEmpty)
+          (pageItems.length > 0)
               ? ApiPagingParams(
                   nextPageNumber: nextPageMarker.nextPageNumber + 1,
                   numItems: newNumItems,

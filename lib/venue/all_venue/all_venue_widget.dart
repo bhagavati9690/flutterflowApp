@@ -1,42 +1,57 @@
 import '/backend/api_requests/api_calls.dart';
-import '/components/distance_comp_widget.dart';
-import '/components/error_compoent_widget.dart';
-import '/components/map_venue_widget.dart';
-import '/components/place_activity_comp_widget.dart';
-import '/components/venue_filter_comp_widget.dart';
-import '/components/view_by_comp_widget.dart';
-import '/flutter_flow/flutter_flow_autocomplete_options_list.dart';
+import '/compoents/allvendor_search_comp/distance_comp/distance_comp_widget.dart';
+import '/compoents/allvendor_search_comp/loading_comp/loading_comp_widget.dart';
+import '/compoents/allvendor_search_comp/location_change_comp/location_change_comp_widget.dart';
+import '/compoents/allvendor_search_comp/map_venue/map_venue_widget.dart';
+import '/compoents/allvendor_search_comp/place_activity_comp/place_activity_comp_widget.dart';
+import '/compoents/allvendor_search_comp/view_by_comp/view_by_comp_widget.dart';
+import '/compoents/common_comp/error_compoent/error_compoent_widget.dart';
+import '/compoents/common_comp/image_error_compoent/image_error_compoent_widget.dart';
+import '/compoents/common_comp/page_viewc_o_m_p/page_viewc_o_m_p_widget.dart';
+import '/compoents/common_comp/rating_comp/rating_comp_widget.dart';
+import '/compoents/venue_comp/venue_filter_comp/venue_filter_comp_widget.dart';
+import '/components/location_search_comp_all_vendor_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
+import '/index.dart';
 import 'dart:async';
+import 'package:aligned_dialog/aligned_dialog.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
+import 'package:webviewx_plus/webviewx_plus.dart';
 import 'all_venue_model.dart';
 export 'all_venue_model.dart';
 
 class AllVenueWidget extends StatefulWidget {
   const AllVenueWidget({
     super.key,
-    this.venueSearchQuery,
-    String? sortoder,
-    String? viewby,
-    bool? showmm,
-  })  : sortoder = sortoder ?? 'ASC',
-        viewby = viewby ?? 'relevance',
-        showmm = showmm ?? true;
+    String? venueSearchQuery,
+    this.venueTypeAgg,
+    this.ageRangeAgg,
+    this.activityTypeAgg,
+    this.sportstypeAgg,
+    this.placeTypeSelection,
+    String? selectedDistance,
+  })  : this.venueSearchQuery = venueSearchQuery ?? '*',
+        this.selectedDistance = selectedDistance ?? '';
 
-  final String? venueSearchQuery;
-  final String sortoder;
-  final String viewby;
-  final bool showmm;
+  final String venueSearchQuery;
+  final List<String>? venueTypeAgg;
+  final List<String>? ageRangeAgg;
+  final List<String>? activityTypeAgg;
+  final List<String>? sportstypeAgg;
+  final String? placeTypeSelection;
+  final String selectedDistance;
+
+  static String routeName = 'allVenue';
+  static String routePath = 'allVenue';
 
   @override
   State<AllVenueWidget> createState() => _AllVenueWidgetState();
@@ -46,7 +61,6 @@ class _AllVenueWidgetState extends State<AllVenueWidget> {
   late AllVenueModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  bool searchFieldFocusListenerRegistered = false;
 
   @override
   void initState() {
@@ -55,14 +69,61 @@ class _AllVenueWidgetState extends State<AllVenueWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      _model.searchuery = widget.venueSearchQuery!;
+      await Future.wait([
+        Future(() async {
+          if (widget.activityTypeAgg != null &&
+              (widget.activityTypeAgg)!.isNotEmpty) {
+            _model.activityTypeAggregation =
+                widget.activityTypeAgg!.toList().cast<String>();
+          }
+        }),
+        Future(() async {
+          if (widget.ageRangeAgg != null &&
+              (widget.ageRangeAgg)!.isNotEmpty) {
+            _model.ageRangeAggregation =
+                widget.ageRangeAgg!.toList().cast<String>();
+          }
+        }),
+        Future(() async {
+          if (widget.placeTypeSelection != null &&
+              widget.placeTypeSelection != '') {
+            _model.placeTypeSelectedId = widget.placeTypeSelection;
+          }
+        }),
+        Future(() async {
+          if (widget.sportstypeAgg != null &&
+              (widget.sportstypeAgg)!.isNotEmpty) {
+            _model.sportstypeAggregation =
+                widget.sportstypeAgg!.toList().cast<String>();
+          }
+        }),
+        Future(() async {
+          if (widget.venueTypeAgg != null &&
+              (widget.venueTypeAgg)!.isNotEmpty) {
+            _model.venueAggregation =
+                widget.venueTypeAgg!.toList().cast<String>();
+          }
+        }),
+      ]);
+      safeSetState(() {
+        _model.venueSearchFieldTextController?.text =
+            (widget.venueSearchQuery == '*' ? '' : widget.venueSearchQuery);
+      });
+      _model.searchuery = valueOrDefault<String>(
+        widget.venueSearchQuery,
+        '*',
+      );
       _model.showSerchResult = false;
-      FFAppState().visibalMap = false;
+      safeSetState(() {});
+      _model.pageLoad = true;
+      safeSetState(() {});
     });
 
-    _model.searchFieldTextController ??= TextEditingController();
+    _model.venueSearchFieldTextController ??= TextEditingController(
+        text: _model.searchuery == '*' ? '' : _model.searchuery);
+    _model.venueSearchFieldFocusNode ??= FocusNode();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
   @override
@@ -76,533 +137,547 @@ class _AllVenueWidgetState extends State<AllVenueWidget> {
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
 
-    return FutureBuilder<ApiCallResponse>(
-      future: (_model.apiRequestCompleter2 ??= Completer<ApiCallResponse>()
-            ..complete(VenuesGroup.getAllVenuesCall.call(
-              searchText: _model.searchuery,
-              limit: 5,
-              filters: functions.filterInputFunctionc(
-                  valueOrDefault<String>(
-                    functions.distanceSelectionConverter(
-                        _model.distanceSelectionOutput != null &&
-                                _model.distanceSelectionOutput != ''
-                            ? _model.distanceSelectionOutput!
-                            : '55'),
-                    '25',
-                  ),
-                  functions
-                      .venuTypeSelectionConverter(
-                          _model.venueAggregation.toList())
-                      ?.toList(),
-                  functions
-                      .venuTypeSelectionConverter(
-                          _model.activityTypeAggregation.toList())
-                      ?.toList(),
-                  functions
-                      .venuTypeSelectionConverter(
-                          _model.sportstypeAggregation.toList())
-                      ?.toList(),
-                  functions
-                      .venuTypeSelectionConverter(
-                          _model.pricefactorAggregation.toList())
-                      ?.toList(),
-                  functions
-                      .venuTypeSelectionConverter(
-                          _model.rankingAggregation.toList())
-                      ?.toList(),
-                  functions
-                      .venuTypeSelectionConverter(
-                          _model.ageRangeAggregation.toList())
-                      ?.toList(),
-                  functions
-                      .venuTypeSelectionConverter(
-                          _model.townAggregation.toList())
-                      ?.toList(),
-                  functions
-                      .venuTypeSelectionConverter(
-                          _model.capacityAggregation.toList())
-                      ?.toList(),
-                  functions
-                      .venuTypeSelectionConverter(
-                          _model.demographicsAggregation.toList())
-                      ?.toList(),
-                  _model.placeSelectionOutput),
-            )))
-          .future,
-      builder: (context, snapshot) {
-        // Customize what your widget looks like when it's loading.
-        if (!snapshot.hasData) {
-          return Scaffold(
-            backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-            body: Center(
-              child: SizedBox(
-                width: 20.0,
-                height: 20.0,
-                child: SpinKitRing(
-                  color: FlutterFlowTheme.of(context).primary,
-                  size: 20.0,
-                ),
-              ),
-            ),
-          );
-        }
-        final allVenueGetAllVenuesResponse = snapshot.data!;
-        return GestureDetector(
-          onTap: () => _model.unfocusNode.canRequestFocus
-              ? FocusScope.of(context).requestFocus(_model.unfocusNode)
-              : FocusScope.of(context).unfocus(),
-          child: Scaffold(
-            key: scaffoldKey,
-            backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-            appBar: AppBar(
-              backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-              iconTheme: IconThemeData(
-                  color: FlutterFlowTheme.of(context).primaryText),
-              automaticallyImplyLeading: false,
-              leading: FlutterFlowIconButton(
-                borderRadius: 20.0,
-                buttonSize: 24.0,
-                fillColor: FlutterFlowTheme.of(context).secondaryBackground,
-                icon: Icon(
-                  Icons.arrow_back_rounded,
-                  color: FlutterFlowTheme.of(context).primaryText,
-                  size: 32.0,
-                ),
-                onPressed: () async {
-                  context.pushNamed(
-                    'HomePage',
-                    extra: <String, dynamic>{
-                      kTransitionInfoKey: const TransitionInfo(
-                        hasTransition: true,
-                        transitionType: PageTransitionType.rightToLeft,
-                      ),
-                    },
-                  );
-                },
-              ),
-              actions: [
-                Builder(
-                  builder: (context) => FlutterFlowIconButton(
-                    borderRadius: 20.0,
-                    buttonSize: 40.0,
-                    fillColor: FlutterFlowTheme.of(context).secondaryBackground,
-                    icon: Icon(
-                      Icons.tune_rounded,
-                      color: FlutterFlowTheme.of(context).primaryText,
-                      size: 24.0,
-                    ),
-                    onPressed: () async {
-                      _model.venueAggregation = [''];
-                      _model.activityTypeAggregation = [''];
-                      _model.townAggregation = [''];
-                      _model.activityCategoryAggregation = [''];
-                      _model.sportstypeAggregation = [''];
-                      _model.capacityAggregation = [''];
-                      _model.rankingAggregation = [''];
-                      _model.pricefactorAggregation = [''];
-                      _model.demographicsAggregation = [''];
-                      _model.ageRangeAggregation = [''];
-                      setState(() => _model.apiRequestCompleter2 = null);
-                      await _model.waitForApiRequestCompleted2();
-                      await showDialog(
-                        context: context,
-                        builder: (dialogContext) {
-                          return Dialog(
-                            elevation: 0,
-                            insetPadding: EdgeInsets.zero,
-                            backgroundColor: Colors.transparent,
-                            alignment: const AlignmentDirectional(0.0, 1.0)
-                                .resolve(Directionality.of(context)),
-                            child: GestureDetector(
-                              onTap: () => _model.unfocusNode.canRequestFocus
-                                  ? FocusScope.of(context)
-                                      .requestFocus(_model.unfocusNode)
-                                  : FocusScope.of(context).unfocus(),
-                              child: SizedBox(
-                                height: double.infinity,
-                                width: MediaQuery.sizeOf(context).width * 0.9,
-                                child: VenueFilterCompWidget(
-                                  venueType: VenuesGroup.getAllVenuesCall
-                                      .venueTypeName(
-                                    allVenueGetAllVenuesResponse.jsonBody,
-                                  )!,
-                                  venueCount: VenuesGroup.getAllVenuesCall
-                                      .venueTypeCount(
-                                    allVenueGetAllVenuesResponse.jsonBody,
-                                  )!,
-                                  activityType:
-                                      VenuesGroup.getAllVenuesCall.activitytype(
-                                    allVenueGetAllVenuesResponse.jsonBody,
-                                  )!,
-                                  activityCount: VenuesGroup.getAllVenuesCall
-                                      .activitytypeCount(
-                                    allVenueGetAllVenuesResponse.jsonBody,
-                                  )!,
-                                  sportType:
-                                      VenuesGroup.getAllVenuesCall.sportstype(
-                                    allVenueGetAllVenuesResponse.jsonBody,
-                                  )!,
-                                  sportTypeCount: VenuesGroup.getAllVenuesCall
-                                      .sportstypeCount(
-                                    allVenueGetAllVenuesResponse.jsonBody,
-                                  )!,
-                                  price:
-                                      VenuesGroup.getAllVenuesCall.priceyfactor(
-                                    allVenueGetAllVenuesResponse.jsonBody,
-                                  )!,
-                                  rank: VenuesGroup.getAllVenuesCall.ranking(
-                                    allVenueGetAllVenuesResponse.jsonBody,
-                                  )!,
-                                  rankCount:
-                                      VenuesGroup.getAllVenuesCall.rankingCount(
-                                    allVenueGetAllVenuesResponse.jsonBody,
-                                  )!,
-                                  age: VenuesGroup.getAllVenuesCall.agerange(
-                                    allVenueGetAllVenuesResponse.jsonBody,
-                                  )!,
-                                  ageCount: VenuesGroup.getAllVenuesCall
-                                      .agerangeCount(
-                                    allVenueGetAllVenuesResponse.jsonBody,
-                                  )!,
-                                  town: VenuesGroup.getAllVenuesCall.town(
-                                    allVenueGetAllVenuesResponse.jsonBody,
-                                  )!,
-                                  townCount:
-                                      VenuesGroup.getAllVenuesCall.townCount(
-                                    allVenueGetAllVenuesResponse.jsonBody,
-                                  )!,
-                                  capacity:
-                                      VenuesGroup.getAllVenuesCall.capacity(
-                                    allVenueGetAllVenuesResponse.jsonBody,
-                                  )!,
-                                  capacityCount: VenuesGroup.getAllVenuesCall
-                                      .capacityCount(
-                                    allVenueGetAllVenuesResponse.jsonBody,
-                                  )!,
-                                  gender:
-                                      VenuesGroup.getAllVenuesCall.demographics(
-                                    allVenueGetAllVenuesResponse.jsonBody,
-                                  )!,
-                                  genderCount: VenuesGroup.getAllVenuesCall
-                                      .demographicsCount(
-                                    allVenueGetAllVenuesResponse.jsonBody,
-                                  )!,
-                                  activityCatgory: VenuesGroup.getAllVenuesCall
-                                      .activitycategory(
-                                    allVenueGetAllVenuesResponse.jsonBody,
-                                  )!,
-                                  activityCatgoryCount: VenuesGroup
-                                      .getAllVenuesCall
-                                      .activitycategoryCount(
-                                    allVenueGetAllVenuesResponse.jsonBody,
-                                  )!,
-                                  priceCount: VenuesGroup.getAllVenuesCall
-                                      .priceyfactorCount(
-                                    allVenueGetAllVenuesResponse.jsonBody,
-                                  )!,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ).then((value) =>
-                          safeSetState(() => _model.aggreSelection = value));
-
-                      _model.venueAggregation = _model
-                          .aggreSelection!.venueTypeSelections
-                          .toList()
-                          .cast<String>();
-                      _model.activityTypeAggregation = _model
-                          .aggreSelection!.activityTypeSelections
-                          .toList()
-                          .cast<String>();
-                      _model.sportstypeAggregation = _model
-                          .aggreSelection!.sportTypeSelections
-                          .toList()
-                          .cast<String>();
-                      _model.pricefactorAggregation = _model
-                          .aggreSelection!.priceFactorSelections
-                          .toList()
-                          .cast<String>();
-                      _model.townAggregation = _model
-                          .aggreSelection!.townSelections
-                          .toList()
-                          .cast<String>();
-                      _model.activityCategoryAggregation = _model
-                          .aggreSelection!.activityTypeCategorySelections
-                          .toList()
-                          .cast<String>();
-                      _model.capacityAggregation = _model
-                          .aggreSelection!.capacitySelections
-                          .toList()
-                          .cast<String>();
-                      _model.rankingAggregation = _model
-                          .aggreSelection!.rankingSelections
-                          .toList()
-                          .cast<String>();
-                      _model.demographicsAggregation = _model
-                          .aggreSelection!.demographicsSelections
-                          .toList()
-                          .cast<String>();
-                      _model.ageRangeAggregation = _model
-                          .aggreSelection!.ageRangeSelections
-                          .toList()
-                          .cast<String>();
-                      setState(() =>
-                          _model.venueListViewPagingController?.refresh());
-                      await _model.waitForOnePageForVenueListView();
-
-                      setState(() {});
-                    },
-                  ),
-                ),
-              ],
-              flexibleSpace: FlexibleSpaceBar(
-                title: Container(
-                  height: 43.0,
-                  decoration: BoxDecoration(
-                    color: FlutterFlowTheme.of(context).secondaryBackground,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        valueOrDefault<String>(
-                          _model.showSerchResult.toString(),
-                          'c',
-                        ),
-                        style: FlutterFlowTheme.of(context).titleLarge.override(
-                              fontFamily: 'Outfit',
-                              color: FlutterFlowTheme.of(context).primaryText,
-                              letterSpacing: 0.0,
-                            ),
-                      ),
-                      Opacity(
-                        opacity: 0.6,
-                        child: Text(
-                          '(${_model.totlcount == '' ? VenuesGroup.getAllVenuesCall.searchCount(
-                                allVenueGetAllVenuesResponse.jsonBody,
-                              )?.toString() : _model.totlcount}results)',
-                          style: FlutterFlowTheme.of(context)
-                              .bodyMedium
-                              .override(
-                                fontFamily: 'Readex Pro',
-                                color:
-                                    FlutterFlowTheme.of(context).secondaryText,
-                                letterSpacing: 0.0,
-                              ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                centerTitle: true,
-                expandedTitleScale: 1.0,
-              ),
-              elevation: 0.0,
-            ),
-            body: SafeArea(
-              top: true,
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
+      child: Scaffold(
+        key: scaffoldKey,
+        backgroundColor: Color(0xFFE3F333),
+        body: Stack(
+          children: [
+            Padding(
+              padding: EdgeInsetsDirectional.fromSTEB(0.0, 98.0, 0.0, 0.0),
               child: Container(
-                decoration: const BoxDecoration(),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: Stack(
-                    children: [
-                      Align(
-                        alignment: const AlignmentDirectional(0.0, 0.0),
-                        child: Column(
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                ),
+                child: Stack(
+                  children: [
+                    Column(
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           mainAxisSize: MainAxisSize.max,
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Padding(
-                              padding: const EdgeInsetsDirectional.fromSTEB(
-                                  6.0, 0.0, 7.0, 0.0),
-                              child: Autocomplete<String>(
-                                initialValue: const TextEditingValue(),
-                                optionsBuilder: (textEditingValue) {
-                                  if (textEditingValue.text == '') {
-                                    return const Iterable<String>.empty();
-                                  }
-                                  return ['Option 1'].where((option) {
-                                    final lowercaseOption =
-                                        option.toLowerCase();
-                                    return lowercaseOption.contains(
-                                        textEditingValue.text.toLowerCase());
-                                  });
-                                },
-                                optionsViewBuilder:
-                                    (context, onSelected, options) {
-                                  return AutocompleteOptionsList(
-                                    textFieldKey: _model.searchFieldKey,
-                                    textController:
-                                        _model.searchFieldTextController!,
-                                    options: options.toList(),
-                                    onSelected: onSelected,
-                                    textStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily: 'Readex Pro',
-                                          letterSpacing: 0.0,
-                                        ),
-                                    textHighlightStyle: const TextStyle(),
-                                    elevation: 4.0,
-                                    optionBackgroundColor:
-                                        FlutterFlowTheme.of(context)
-                                            .primaryBackground,
-                                    optionHighlightColor:
-                                        FlutterFlowTheme.of(context)
-                                            .secondaryBackground,
-                                    maxHeight: 200.0,
-                                  );
-                                },
-                                onSelected: (String selection) {
-                                  setState(() => _model
-                                      .searchFieldSelectedOption = selection);
-                                  FocusScope.of(context).unfocus();
-                                },
-                                fieldViewBuilder: (
-                                  context,
-                                  textEditingController,
-                                  focusNode,
-                                  onEditingComplete,
-                                ) {
-                                  _model.searchFieldFocusNode = focusNode;
-                                  if (!searchFieldFocusListenerRegistered) {
-                                    searchFieldFocusListenerRegistered = true;
-                                    _model.searchFieldFocusNode!
-                                        .addListener(() => setState(() {}));
-                                  }
-                                  _model.searchFieldTextController =
-                                      textEditingController;
-                                  return TextFormField(
-                                    key: _model.searchFieldKey,
-                                    controller: textEditingController,
-                                    focusNode: focusNode,
-                                    onEditingComplete: onEditingComplete,
-                                    onChanged: (_) => EasyDebounce.debounce(
-                                      '_model.searchFieldTextController',
-                                      const Duration(milliseconds: 2000),
-                                      () async {
-                                        _model.showSerchResult = _model.searchFieldTextController
-                                                    .text !=
-                                                '';
-                                        _model.searchuery = _model.searchFieldTextController
-                                                        .text !=
+                            Flexible(
+                              child: Builder(
+                                builder: (context) => Padding(
+                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                      0.0, 2.0, 0.0, 0.0),
+                                  child: InkWell(
+                                    splashColor: Colors.transparent,
+                                    focusColor: Colors.transparent,
+                                    hoverColor: Colors.transparent,
+                                    highlightColor: Colors.transparent,
+                                    onTap: () async {
+                                      await showAlignedDialog(
+                                        context: context,
+                                        isGlobal: false,
+                                        avoidOverflow: true,
+                                        targetAnchor:
+                                            AlignmentDirectional(0.0, 0.0)
+                                                .resolve(
+                                                    Directionality.of(context)),
+                                        followerAnchor:
+                                            AlignmentDirectional(0.0, 0.0)
+                                                .resolve(
+                                                    Directionality.of(context)),
+                                        builder: (dialogContext) {
+                                          return Material(
+                                            color: Colors.transparent,
+                                            child: WebViewAware(
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  FocusScope.of(dialogContext)
+                                                      .unfocus();
+                                                  FocusManager
+                                                      .instance.primaryFocus
+                                                      ?.unfocus();
+                                                },
+                                                child: Container(
+                                                  height:
+                                                      MediaQuery.sizeOf(context)
+                                                              .height *
+                                                          0.99,
+                                                  width:
+                                                      MediaQuery.sizeOf(context)
+                                                              .width *
+                                                          0.99,
+                                                  child:
+                                                      LocationChangeCompWidget(
+                                                    latitude:
+                                                        FFAppState().latitude,
+                                                    longitude:
+                                                        FFAppState().longituade,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ).then((value) => safeSetState(() =>
+                                          _model.locationUpdateOutput = value));
+
+                                      _model.assignLocation =
+                                          await AccountInfoGroup
+                                              .assignLocationCall
+                                              .call(
+                                        country: _model.locationUpdateOutput
+                                                        ?.country !=
+                                                    null &&
+                                                _model.locationUpdateOutput
+                                                        ?.country !=
                                                     ''
                                             ? _model
-                                                .searchFieldTextController.text
-                                            : '*';
-                                        setState(() =>
-                                            _model.apiRequestCompleter2 = null);
-                                        await _model
-                                            .waitForApiRequestCompleted2();
-                                        setState(() => _model
-                                            .venueListViewPagingController
-                                            ?.refresh());
-                                        await _model
-                                            .waitForOnePageForVenueListView();
-                                      },
-                                    ),
-                                    onFieldSubmitted: (_) async {
-                                      _model.searchuery = _model.searchFieldTextController
-                                                      .text !=
-                                                  ''
-                                          ? _model
-                                              .searchFieldTextController.text
-                                          : '*';
-                                      _model.showSerchResult = false;
-                                      setState(() =>
-                                          _model.apiRequestCompleter2 = null);
-                                      await _model
-                                          .waitForApiRequestCompleted2();
-                                      setState(() => _model
+                                                .locationUpdateOutput?.country
+                                            : FFAppState().country,
+                                        postalCode: _model.locationUpdateOutput
+                                                        ?.postalCode !=
+                                                    null &&
+                                                _model.locationUpdateOutput
+                                                        ?.postalCode !=
+                                                    ''
+                                            ? _model.locationUpdateOutput
+                                                ?.postalCode
+                                            : FFAppState().pincode,
+                                        geometrycoordinates0: _model
+                                                    .locationUpdateOutput
+                                                    ?.longitude !=
+                                                null
+                                            ? _model
+                                                .locationUpdateOutput?.longitude
+                                            : FFAppState().longituade,
+                                        geometrycoordinates1: _model
+                                                    .locationUpdateOutput
+                                                    ?.latitude !=
+                                                null
+                                            ? _model
+                                                .locationUpdateOutput?.latitude
+                                            : FFAppState().latitude,
+                                        stateProvince: _model
+                                                        .locationUpdateOutput
+                                                        ?.region !=
+                                                    null &&
+                                                _model.locationUpdateOutput
+                                                        ?.region !=
+                                                    ''
+                                            ? _model
+                                                .locationUpdateOutput?.region
+                                            : FFAppState().region,
+                                        cityTown: _model.locationUpdateOutput
+                                                        ?.place !=
+                                                    null &&
+                                                _model.locationUpdateOutput
+                                                        ?.place !=
+                                                    ''
+                                            ? _model.locationUpdateOutput?.place
+                                            : FFAppState().place,
+                                        token: FFAppState().SessionToken,
+                                      );
+
+                                      if ((_model.assignLocation?.succeeded ??
+                                          true)) {
+                                        FFAppState().latitude = _model
+                                                    .locationUpdateOutput
+                                                    ?.latitude !=
+                                                null
+                                            ? _model
+                                                .locationUpdateOutput!.latitude
+                                            : FFAppState().latitude;
+                                        FFAppState().longituade = _model
+                                                    .locationUpdateOutput
+                                                    ?.longitude !=
+                                                null
+                                            ? _model
+                                                .locationUpdateOutput!.longitude
+                                            : FFAppState().longituade;
+                                        FFAppState().place = _model
+                                                        .locationUpdateOutput
+                                                        ?.place !=
+                                                    null &&
+                                                _model.locationUpdateOutput
+                                                        ?.place !=
+                                                    ''
+                                            ? _model.locationUpdateOutput!.place
+                                            : FFAppState().place;
+                                        FFAppState().pincode = _model
+                                                        .locationUpdateOutput
+                                                        ?.postalCode !=
+                                                    null &&
+                                                _model.locationUpdateOutput
+                                                        ?.postalCode !=
+                                                    ''
+                                            ? _model.locationUpdateOutput!
+                                                .postalCode
+                                            : FFAppState().pincode;
+                                        FFAppState().country = _model
+                                                        .locationUpdateOutput
+                                                        ?.country !=
+                                                    null &&
+                                                _model.locationUpdateOutput
+                                                        ?.country !=
+                                                    ''
+                                            ? _model
+                                                .locationUpdateOutput!.country
+                                            : FFAppState().country;
+                                        FFAppState().region = _model
+                                                        .locationUpdateOutput
+                                                        ?.region !=
+                                                    null &&
+                                                _model.locationUpdateOutput
+                                                        ?.region !=
+                                                    ''
+                                            ? _model
+                                                .locationUpdateOutput!.region
+                                            : FFAppState().region;
+                                        FFAppState().SessionToken = (_model
+                                                .assignLocation
+                                                ?.getHeader('cbxtoken') ??
+                                            '');
+                                        _model.visibleTabResponse =
+                                            await VisibleTabCall.call(
+                                          state: _model.locationUpdateOutput
+                                                          ?.region !=
+                                                      null &&
+                                                  _model.locationUpdateOutput
+                                                          ?.region !=
+                                                      ''
+                                              ? _model
+                                                  .locationUpdateOutput?.region
+                                              : FFAppState().region,
+                                          token: FFAppState().SessionToken,
+                                        );
+
+                                        if ((_model.visibleTabResponse
+                                                ?.succeeded ??
+                                            true)) {
+                                          FFAppState().rentalVisible =
+                                              functions.stringToBool(
+                                                  VisibleTabCall.rental(
+                                            (_model.visibleTabResponse
+                                                    ?.jsonBody ??
+                                                ''),
+                                          ));
+                                          FFAppState().entertainerVisible =
+                                              functions.stringToBool(
+                                                  VisibleTabCall.entertainer(
+                                            (_model.visibleTabResponse
+                                                    ?.jsonBody ??
+                                                ''),
+                                          ));
+                                          FFAppState().cakeVisible = functions
+                                              .stringToBool(VisibleTabCall.cake(
+                                            (_model.visibleTabResponse
+                                                    ?.jsonBody ??
+                                                ''),
+                                          ));
+                                        }
+                                      }
+                                      safeSetState(() => _model
                                           .venueListViewPagingController
                                           ?.refresh());
                                       await _model
                                           .waitForOnePageForVenueListView();
+
+                                      safeSetState(() {});
                                     },
-                                    autofocus: false,
-                                    obscureText: false,
-                                    decoration: InputDecoration(
-                                      labelText: 'Search',
-                                      hintText: 'Search for venues...',
-                                      hintStyle: FlutterFlowTheme.of(context)
-                                          .bodyLarge
-                                          .override(
-                                            fontFamily: 'Readex Pro',
-                                            color: FlutterFlowTheme.of(context)
-                                                .secondaryText,
-                                            letterSpacing: 0.0,
+                                    child: wrapWithModel(
+                                      model: _model
+                                          .locationSearchCompAllVendorModel,
+                                      updateCallback: () => safeSetState(() {}),
+                                      child:
+                                          LocationSearchCompAllVendorWidget(),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Builder(
+                              builder: (context) => FFButtonWidget(
+                                onPressed: () async {
+                                  await showDialog(
+                                    context: context,
+                                    builder: (dialogContext) {
+                                      return Dialog(
+                                        elevation: 0,
+                                        insetPadding: EdgeInsets.zero,
+                                        backgroundColor: Colors.transparent,
+                                        alignment:
+                                            AlignmentDirectional(0.0, 1.0)
+                                                .resolve(
+                                                    Directionality.of(context)),
+                                        child: WebViewAware(
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              FocusScope.of(dialogContext)
+                                                  .unfocus();
+                                              FocusManager.instance.primaryFocus
+                                                  ?.unfocus();
+                                            },
+                                            child: Container(
+                                              width: double.infinity,
+                                              child: DistanceCompWidget(),
+                                            ),
                                           ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText,
-                                          width: 2.0,
                                         ),
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
+                                      );
+                                    },
+                                  ).then((value) => safeSetState(
+                                      () => _model.distanceSelection = value));
+
+                                  if (_model.distanceSelection != null &&
+                                      _model.distanceSelection != '') {
+                                    FFAppState().distance =
+                                        _model.distanceSelection!;
+                                    safeSetState(() => _model
+                                        .venueListViewPagingController
+                                        ?.refresh());
+                                  }
+
+                                  safeSetState(() {});
+                                },
+                                text: valueOrDefault<String>(
+                                  FFAppState().distance,
+                                  'Distance',
+                                ),
+                                icon: FaIcon(
+                                  FontAwesomeIcons.streetView,
+                                  size: 20.0,
+                                ),
+                                options: FFButtonOptions(
+                                  height:
+                                      MediaQuery.sizeOf(context).height * 0.064,
+                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                      7.0, 0.0, 7.0, 0.0),
+                                  iconPadding: EdgeInsets.all(0.0),
+                                  iconColor:
+                                      FlutterFlowTheme.of(context).primary,
+                                  color: FlutterFlowTheme.of(context)
+                                      .secondaryBackground,
+                                  textStyle: FlutterFlowTheme.of(context)
+                                      .titleSmall
+                                      .override(
+                                        fontFamily: FlutterFlowTheme.of(context)
+                                            .titleSmallFamily,
+                                        color: FlutterFlowTheme.of(context)
+                                            .primaryText,
+                                        letterSpacing: 0.0,
+                                        fontWeight: FontWeight.w500,
+                                        useGoogleFonts:
+                                            !FlutterFlowTheme.of(context)
+                                                .titleSmallIsCustom,
                                       ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: const BorderSide(
-                                          color: Color(0x00000000),
-                                          width: 2.0,
-                                        ),
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                      ),
-                                      errorBorder: OutlineInputBorder(
-                                        borderSide: const BorderSide(
-                                          color: Color(0x00000000),
-                                          width: 2.0,
-                                        ),
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                      ),
-                                      focusedErrorBorder: OutlineInputBorder(
-                                        borderSide: const BorderSide(
-                                          color: Color(0x00000000),
-                                          width: 2.0,
-                                        ),
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                      ),
-                                      suffixIcon: Icon(
-                                        Icons.search_rounded,
+                                  elevation: 0.0,
+                                  borderSide: BorderSide(
+                                    color:
+                                        FlutterFlowTheme.of(context).alternate,
+                                    width: 2.0,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                showLoadingIndicator: false,
+                              ),
+                            ),
+                          ]
+                              .divide(SizedBox(width: 4.0))
+                              .addToStart(SizedBox(width: 3.0))
+                              .addToEnd(SizedBox(width: 3.0)),
+                        ),
+                        Padding(
+                          padding: EdgeInsetsDirectional.fromSTEB(
+                              4.0, 7.0, 4.0, 0.0),
+                          child: TextFormField(
+                            controller: _model.venueSearchFieldTextController,
+                            focusNode: _model.venueSearchFieldFocusNode,
+                            onChanged: (_) => EasyDebounce.debounce(
+                              '_model.venueSearchFieldTextController',
+                              Duration(milliseconds: 2000),
+                              () async {
+                                _model.showSerchResult = _model.venueSearchFieldTextController
+                                            .text !=
+                                        '';
+                                _model.searchuery = valueOrDefault<String>(
+                                  _model.venueSearchFieldTextController
+                                                  .text !=
+                                              ''
+                                      ? valueOrDefault<String>(
+                                          _model.venueSearchFieldTextController
+                                              .text,
+                                          '*',
+                                        )
+                                      : '*',
+                                  '*',
+                                );
+                                safeSetState(() => _model
+                                    .venueListViewPagingController
+                                    ?.refresh());
+                                safeSetState(
+                                    () => _model.apiRequestCompleter1 = null);
+                              },
+                            ),
+                            onFieldSubmitted: (_) async {
+                              _model.showSerchResult = false;
+                              _model.searchuery = valueOrDefault<String>(
+                                _model.venueSearchFieldTextController
+                                                .text !=
+                                            ''
+                                    ? _model.venueSearchFieldTextController.text
+                                    : '*',
+                                '*',
+                              );
+                              safeSetState(() => _model
+                                  .venueListViewPagingController
+                                  ?.refresh());
+                            },
+                            autofocus: false,
+                            obscureText: false,
+                            decoration: InputDecoration(
+                              labelText: FFLocalizations.of(context).getText(
+                                'awh4mr7s' /* Search */,
+                              ),
+                              labelStyle: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .override(
+                                    fontFamily: FlutterFlowTheme.of(context)
+                                        .bodyMediumFamily,
+                                    color: FlutterFlowTheme.of(context)
+                                        .primaryText,
+                                    letterSpacing: 0.0,
+                                    useGoogleFonts:
+                                        !FlutterFlowTheme.of(context)
+                                            .bodyMediumIsCustom,
+                                  ),
+                              hintText: FFLocalizations.of(context).getText(
+                                'etyu5c0t' /* Search for venues... */,
+                              ),
+                              hintStyle: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .override(
+                                    fontFamily: FlutterFlowTheme.of(context)
+                                        .bodyMediumFamily,
+                                    color: FlutterFlowTheme.of(context)
+                                        .primaryText,
+                                    letterSpacing: 0.0,
+                                    useGoogleFonts:
+                                        !FlutterFlowTheme.of(context)
+                                            .bodyMediumIsCustom,
+                                  ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: FlutterFlowTheme.of(context).alternate,
+                                  width: 2.0,
+                                ),
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color:
+                                      FlutterFlowTheme.of(context).primaryText,
+                                  width: 2.0,
+                                ),
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Color(0x00000000),
+                                  width: 2.0,
+                                ),
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Color(0x00000000),
+                                  width: 2.0,
+                                ),
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              prefixIcon: Icon(
+                                Icons.search_sharp,
+                                color:
+                                    FlutterFlowTheme.of(context).secondaryText,
+                              ),
+                              suffixIcon: _model.venueSearchFieldTextController!
+                                      .text.isNotEmpty
+                                  ? InkWell(
+                                      onTap: () async {
+                                        _model.venueSearchFieldTextController
+                                            ?.clear();
+                                        _model.showSerchResult = _model.venueSearchFieldTextController
+                                                    .text !=
+                                                '';
+                                        _model.searchuery =
+                                            valueOrDefault<String>(
+                                          _model.venueSearchFieldTextController
+                                                          .text !=
+                                                      ''
+                                              ? valueOrDefault<String>(
+                                                  _model
+                                                      .venueSearchFieldTextController
+                                                      .text,
+                                                  '*',
+                                                )
+                                              : '*',
+                                          '*',
+                                        );
+                                        safeSetState(() => _model
+                                            .venueListViewPagingController
+                                            ?.refresh());
+                                        safeSetState(() =>
+                                            _model.apiRequestCompleter1 = null);
+                                        safeSetState(() {});
+                                      },
+                                      child: Icon(
+                                        Icons.clear,
                                         color: FlutterFlowTheme.of(context)
                                             .primaryText,
                                         size: 21.0,
                                       ),
-                                    ),
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily: 'Readex Pro',
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryText,
-                                          letterSpacing: 0.0,
-                                        ),
-                                    validator: _model
-                                        .searchFieldTextControllerValidator
-                                        .asValidator(context),
-                                  );
-                                },
-                              ),
+                                    )
+                                  : null,
                             ),
-                            Padding(
-                              padding: const EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 8.0, 0.0, 8.0),
-                              child: SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Builder(
-                                      builder: (context) => FFButtonWidget(
-                                        onPressed: () async {
+                            style: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .override(
+                                  fontFamily: FlutterFlowTheme.of(context)
+                                      .bodyMediumFamily,
+                                  color:
+                                      FlutterFlowTheme.of(context).primaryText,
+                                  letterSpacing: 0.0,
+                                  useGoogleFonts: !FlutterFlowTheme.of(context)
+                                      .bodyMediumIsCustom,
+                                ),
+                            validator: _model
+                                .venueSearchFieldTextControllerValidator
+                                .asValidator(context),
+                          ),
+                        ),
+                        Align(
+                          alignment: AlignmentDirectional(0.0, 0.0),
+                          child: Padding(
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                                1.0, 9.0, 1.0, 9.0),
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.max,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Builder(
+                                    builder: (context) => FFButtonWidget(
+                                      onPressed: () async {
+                                        _model.partyplacesList =
+                                            await VenuesGroup
+                                                .getPartyPlaceTypeCall
+                                                .call();
+
+                                        if ((_model
+                                                .partyplacesList?.succeeded ??
+                                            true)) {
                                           await showDialog(
                                             context: context,
                                             builder: (dialogContext) {
@@ -611,423 +686,564 @@ class _AllVenueWidgetState extends State<AllVenueWidget> {
                                                 insetPadding: EdgeInsets.zero,
                                                 backgroundColor:
                                                     Colors.transparent,
-                                                alignment: const AlignmentDirectional(
+                                                alignment: AlignmentDirectional(
                                                         0.0, 1.0)
                                                     .resolve(Directionality.of(
                                                         context)),
-                                                child: GestureDetector(
-                                                  onTap: () => _model
-                                                          .unfocusNode
-                                                          .canRequestFocus
-                                                      ? FocusScope.of(context)
-                                                          .requestFocus(_model
-                                                              .unfocusNode)
-                                                      : FocusScope.of(context)
-                                                          .unfocus(),
-                                                  child: const SizedBox(
-                                                    width: double.infinity,
-                                                    child: DistanceCompWidget(),
+                                                child: WebViewAware(
+                                                  child: GestureDetector(
+                                                    onTap: () {
+                                                      FocusScope.of(
+                                                              dialogContext)
+                                                          .unfocus();
+                                                      FocusManager
+                                                          .instance.primaryFocus
+                                                          ?.unfocus();
+                                                    },
+                                                    child: Container(
+                                                      width: double.infinity,
+                                                      child:
+                                                          PlaceActivityCompWidget(
+                                                        partyListItem: VenuesGroup
+                                                            .getPartyPlaceTypeCall
+                                                            .details(
+                                                          (_model.partyplacesList
+                                                                  ?.jsonBody ??
+                                                              ''),
+                                                        ),
+                                                        selected: _model
+                                                            .placeTypeSeletedName,
+                                                        lable: 'Place/Activity',
+                                                      ),
+                                                    ),
                                                   ),
                                                 ),
                                               );
                                             },
                                           ).then((value) => safeSetState(() =>
-                                              _model.distanceSelectionOutput =
+                                              _model.placeSelectionAltertBoxOutput =
                                                   value));
 
-                                          setState(() => _model
+                                          _model.placeTypeSelectedId = _model
+                                              .placeSelectionAltertBoxOutput
+                                              ?.id;
+                                          _model.placeTypeSeletedName = _model
+                                              .placeSelectionAltertBoxOutput
+                                              ?.name;
+                                          safeSetState(() => _model
                                               .venueListViewPagingController
                                               ?.refresh());
                                           await _model
                                               .waitForOnePageForVenueListView();
-                                          setState(() => _model
-                                              .apiRequestCompleter2 = null);
-                                          await _model
-                                              .waitForApiRequestCompleted2();
-                                          _model.totlcount =
-                                              VenuesGroup.getAllVenuesCall
-                                                  .searchCount(
-                                                    allVenueGetAllVenuesResponse
-                                                        .jsonBody,
-                                                  )!
-                                                  .toString();
+                                        }
 
-                                          setState(() {});
-                                        },
-                                        text: 'Distance',
-                                        icon: const FaIcon(
-                                          FontAwesomeIcons.streetView,
-                                          size: 20.0,
-                                        ),
-                                        options: FFButtonOptions(
-                                          height: 31.04,
-                                          padding:
-                                              const EdgeInsetsDirectional.fromSTEB(
-                                                  5.0, 0.0, 5.0, 0.0),
-                                          iconPadding: const EdgeInsets.all(0.0),
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryBackground,
-                                          textStyle: FlutterFlowTheme.of(
-                                                  context)
-                                              .titleSmall
-                                              .override(
-                                                fontFamily: 'Readex Pro',
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                          elevation: 3.0,
-                                          borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
-                                                .primaryBackground,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(12.0),
-                                        ),
+                                        safeSetState(() {});
+                                      },
+                                      text: FFLocalizations.of(context).getText(
+                                        'vtld1taw' /* Place/Activity */,
                                       ),
+                                      icon: FaIcon(
+                                        FontAwesomeIcons.solidPaperPlane,
+                                        size: 20.0,
+                                      ),
+                                      options: FFButtonOptions(
+                                        height:
+                                            MediaQuery.sizeOf(context).height *
+                                                0.05,
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            5.0, 0.0, 5.0, 0.0),
+                                        iconPadding: EdgeInsets.all(0.0),
+                                        iconColor: FlutterFlowTheme.of(context)
+                                            .primary,
+                                        color: FlutterFlowTheme.of(context)
+                                            .secondaryBackground,
+                                        textStyle: FlutterFlowTheme.of(context)
+                                            .titleSmall
+                                            .override(
+                                              fontFamily:
+                                                  FlutterFlowTheme.of(context)
+                                                      .titleSmallFamily,
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primaryText,
+                                              letterSpacing: 0.0,
+                                              fontWeight: FontWeight.w500,
+                                              useGoogleFonts:
+                                                  !FlutterFlowTheme.of(context)
+                                                      .titleSmallIsCustom,
+                                            ),
+                                        elevation: 0.0,
+                                        borderSide: BorderSide(
+                                          color: FlutterFlowTheme.of(context)
+                                              .primaryBackground,
+                                        ),
+                                        borderRadius:
+                                            BorderRadius.circular(12.0),
+                                      ),
+                                      showLoadingIndicator: false,
                                     ),
-                                    Builder(
-                                      builder: (context) => FFButtonWidget(
-                                        onPressed: () async {
-                                          await showDialog(
-                                            context: context,
-                                            builder: (dialogContext) {
-                                              return Dialog(
-                                                elevation: 0,
-                                                insetPadding: EdgeInsets.zero,
-                                                backgroundColor:
-                                                    Colors.transparent,
-                                                alignment: const AlignmentDirectional(
-                                                        0.0, 1.0)
-                                                    .resolve(Directionality.of(
-                                                        context)),
+                                  ),
+                                  Builder(
+                                    builder: (context) => FFButtonWidget(
+                                      onPressed: () async {
+                                        await showDialog(
+                                          context: context,
+                                          builder: (dialogContext) {
+                                            return Dialog(
+                                              elevation: 0,
+                                              insetPadding: EdgeInsets.zero,
+                                              backgroundColor:
+                                                  Colors.transparent,
+                                              alignment:
+                                                  AlignmentDirectional(0.0, 1.0)
+                                                      .resolve(
+                                                          Directionality.of(
+                                                              context)),
+                                              child: WebViewAware(
                                                 child: GestureDetector(
-                                                  onTap: () => _model
-                                                          .unfocusNode
-                                                          .canRequestFocus
-                                                      ? FocusScope.of(context)
-                                                          .requestFocus(_model
-                                                              .unfocusNode)
-                                                      : FocusScope.of(context)
-                                                          .unfocus(),
-                                                  child: SizedBox(
+                                                  onTap: () {
+                                                    FocusScope.of(dialogContext)
+                                                        .unfocus();
+                                                    FocusManager
+                                                        .instance.primaryFocus
+                                                        ?.unfocus();
+                                                  },
+                                                  child: Container(
                                                     height: MediaQuery.sizeOf(
                                                                 context)
                                                             .height *
-                                                        0.35,
+                                                        0.5,
                                                     width: double.infinity,
-                                                    child: const ViewByCompWidget(),
+                                                    child: ViewByCompWidget(
+                                                      sortOrder:
+                                                          _model.sortOrder,
+                                                      sortType: _model.sortType,
+                                                    ),
                                                   ),
                                                 ),
-                                              );
-                                            },
-                                          ).then((value) => safeSetState(() =>
-                                              _model.viewSelectionOutput =
-                                                  value));
-
-                                          setState(() => _model
-                                              .venueListViewPagingController
-                                              ?.refresh());
-                                          await _model
-                                              .waitForOnePageForVenueListView();
-
-                                          setState(() {});
-                                        },
-                                        text: 'Filters',
-                                        icon: const FaIcon(
-                                          FontAwesomeIcons.sort,
-                                          size: 17.0,
-                                        ),
-                                        options: FFButtonOptions(
-                                          height: 31.04,
-                                          padding:
-                                              const EdgeInsetsDirectional.fromSTEB(
-                                                  5.0, 0.0, 5.0, 0.0),
-                                          iconPadding: const EdgeInsets.all(0.0),
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryBackground,
-                                          textStyle: FlutterFlowTheme.of(
-                                                  context)
-                                              .titleSmall
-                                              .override(
-                                                fontFamily: 'Readex Pro',
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.w500,
                                               ),
-                                          elevation: 3.0,
-                                          borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
-                                                .primaryBackground,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(12.0),
-                                        ),
-                                      ),
-                                    ),
-                                    Builder(
-                                      builder: (context) => FFButtonWidget(
-                                        onPressed: () async {
-                                          await showDialog(
-                                            context: context,
-                                            builder: (dialogContext) {
-                                              return Dialog(
-                                                elevation: 0,
-                                                insetPadding: EdgeInsets.zero,
-                                                backgroundColor:
-                                                    Colors.transparent,
-                                                alignment: const AlignmentDirectional(
-                                                        0.0, 1.0)
-                                                    .resolve(Directionality.of(
-                                                        context)),
-                                                child: GestureDetector(
-                                                  onTap: () => _model
-                                                          .unfocusNode
-                                                          .canRequestFocus
-                                                      ? FocusScope.of(context)
-                                                          .requestFocus(_model
-                                                              .unfocusNode)
-                                                      : FocusScope.of(context)
-                                                          .unfocus(),
-                                                  child: const SizedBox(
-                                                    width: double.infinity,
-                                                    child:
-                                                        PlaceActivityCompWidget(),
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                          ).then((value) => safeSetState(() =>
-                                              _model.placeSelectionOutput =
-                                                  value));
+                                            );
+                                          },
+                                        ).then((value) => safeSetState(() =>
+                                            _model.viewSelectionOutput =
+                                                value));
 
-                                          setState(() => _model
-                                              .venueListViewPagingController
-                                              ?.refresh());
-                                          await _model
-                                              .waitForOnePageForVenueListView();
-                                          _model.totlcount =
-                                              VenuesGroup.getAllVenuesCall
-                                                  .searchCount(
-                                                    allVenueGetAllVenuesResponse
-                                                        .jsonBody,
-                                                  )!
-                                                  .toString();
-
-                                          setState(() {});
-                                        },
-                                        text: 'Place/Activity',
-                                        icon: const FaIcon(
-                                          FontAwesomeIcons.solidPaperPlane,
-                                          size: 17.0,
-                                        ),
-                                        options: FFButtonOptions(
-                                          height: 31.04,
-                                          padding:
-                                              const EdgeInsetsDirectional.fromSTEB(
-                                                  5.0, 0.0, 5.0, 0.0),
-                                          iconPadding: const EdgeInsets.all(0.0),
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryBackground,
-                                          textStyle: FlutterFlowTheme.of(
-                                                  context)
-                                              .titleSmall
-                                              .override(
-                                                fontFamily: 'Readex Pro',
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                          elevation: 3.0,
-                                          borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
-                                                .primaryBackground,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(12.0),
-                                        ),
-                                      ),
-                                    ),
-                                  ].divide(const SizedBox(width: 8.0)),
-                                ),
-                              ),
-                            ),
-                            Flexible(
-                              child: Container(
-                                decoration: const BoxDecoration(),
-                                child: RefreshIndicator(
-                                  onRefresh: () async {
-                                    setState(() => _model
-                                        .venueListViewPagingController
-                                        ?.refresh());
-                                    await _model
-                                        .waitForOnePageForVenueListView();
-                                  },
-                                  child:
-                                      PagedListView<ApiPagingParams, dynamic>(
-                                    pagingController:
-                                        _model.setVenueListViewController(
-                                      (nextPageMarker) =>
-                                          VenuesGroup.getAllVenuesCall.call(
-                                        filters: functions.filterInputFunctionc(
+                                        _model.sortOrder =
+                                            _model.viewSelectionOutput != null
+                                                ? _model.viewSelectionOutput!
+                                                    .sortSelection
+                                                : 'desc';
+                                        _model.sortType =
                                             valueOrDefault<String>(
-                                              functions.distanceSelectionConverter(
-                                                  _model.distanceSelectionOutput !=
-                                                              null &&
-                                                          _model.distanceSelectionOutput !=
-                                                              ''
-                                                      ? _model
-                                                          .distanceSelectionOutput!
-                                                      : '55'),
-                                              '25',
-                                            ),
-                                            functions
-                                                .venuTypeSelectionConverter(
-                                                    _model.venueAggregation
-                                                        .toList())
-                                                ?.toList(),
-                                            functions
-                                                .venuTypeSelectionConverter(_model
-                                                    .activityTypeAggregation
-                                                    .toList())
-                                                ?.toList(),
-                                            functions
-                                                .venuTypeSelectionConverter(
-                                                    _model.sportstypeAggregation
-                                                        .toList())
-                                                ?.toList(),
-                                            functions
-                                                .venuTypeSelectionConverter(
-                                                    _model.pricefactorAggregation
-                                                        .toList())
-                                                ?.toList(),
-                                            functions
-                                                .venuTypeSelectionConverter(
-                                                    _model.rankingAggregation
-                                                        .toList())
-                                                ?.toList(),
-                                            functions
-                                                .venuTypeSelectionConverter(
-                                                    _model.ageRangeAggregation
-                                                        .toList())
-                                                ?.toList(),
-                                            functions
-                                                .venuTypeSelectionConverter(_model.townAggregation
-                                                    .toList())
-                                                ?.toList(),
-                                            functions
-                                                .venuTypeSelectionConverter(
-                                                    _model.capacityAggregation
-                                                        .toList())
-                                                ?.toList(),
-                                            functions
-                                                .venuTypeSelectionConverter(
-                                                    _model.demographicsAggregation.toList())
-                                                ?.toList(),
-                                            _model.placeSelectionOutput),
-                                        startIndex:
-                                            nextPageMarker.nextPageNumber * 20,
-                                        pageNumber:
-                                            nextPageMarker.nextPageNumber + 1,
-                                        sortOrderType: valueOrDefault<String>(
                                           functions.viewByConverter(
                                               _model.viewSelectionOutput != null
                                                   ? _model.viewSelectionOutput
                                                       ?.viewSelection
                                                   : 'Relevance'),
                                           'Relevance',
+                                        );
+                                        safeSetState(() => _model
+                                            .venueListViewPagingController
+                                            ?.refresh());
+                                        await _model
+                                            .waitForOnePageForVenueListView();
+
+                                        safeSetState(() {});
+                                      },
+                                      text: FFLocalizations.of(context).getText(
+                                        'p9ak7f59' /* Sort By */,
+                                      ),
+                                      icon: FaIcon(
+                                        FontAwesomeIcons.sort,
+                                        size: 20.0,
+                                      ),
+                                      options: FFButtonOptions(
+                                        height:
+                                            MediaQuery.sizeOf(context).height *
+                                                0.05,
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            5.0, 0.0, 5.0, 0.0),
+                                        iconPadding: EdgeInsets.all(0.0),
+                                        iconColor: FlutterFlowTheme.of(context)
+                                            .primary,
+                                        color: FlutterFlowTheme.of(context)
+                                            .secondaryBackground,
+                                        textStyle: FlutterFlowTheme.of(context)
+                                            .titleSmall
+                                            .override(
+                                              fontFamily:
+                                                  FlutterFlowTheme.of(context)
+                                                      .titleSmallFamily,
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primaryText,
+                                              letterSpacing: 0.0,
+                                              fontWeight: FontWeight.w500,
+                                              useGoogleFonts:
+                                                  !FlutterFlowTheme.of(context)
+                                                      .titleSmallIsCustom,
+                                            ),
+                                        elevation: 0.0,
+                                        borderSide: BorderSide(
+                                          color: FlutterFlowTheme.of(context)
+                                              .primaryBackground,
                                         ),
-                                        sortOrder:
-                                            _model.viewSelectionOutput != null
-                                                ? _model.viewSelectionOutput
-                                                    ?.sortSelection
-                                                : 'desc',
-                                        searchText: _model.searchuery,
-                                        limit: 20,
+                                        borderRadius:
+                                            BorderRadius.circular(12.0),
+                                      ),
+                                      showLoadingIndicator: false,
+                                    ),
+                                  ),
+                                  if (responsiveVisibility(
+                                    context: context,
+                                    phone: false,
+                                    tablet: false,
+                                    tabletLandscape: false,
+                                    desktop: false,
+                                  ))
+                                    FFButtonWidget(
+                                      onPressed: () {
+                                        print('Button pressed ...');
+                                      },
+                                      text: FFLocalizations.of(context).getText(
+                                        'nsjoltf1' /* Filters */,
+                                      ),
+                                      icon: Icon(
+                                        Icons.filter_alt,
+                                        size: 20.0,
+                                      ),
+                                      options: FFButtonOptions(
+                                        height:
+                                            MediaQuery.sizeOf(context).height *
+                                                0.05,
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            5.0, 0.0, 5.0, 0.0),
+                                        iconPadding:
+                                            EdgeInsetsDirectional.fromSTEB(
+                                                0.0, 0.0, 0.0, 0.0),
+                                        iconColor: FlutterFlowTheme.of(context)
+                                            .primary,
+                                        color: FlutterFlowTheme.of(context)
+                                            .secondaryBackground,
+                                        textStyle: FlutterFlowTheme.of(context)
+                                            .titleSmall
+                                            .override(
+                                              fontFamily:
+                                                  FlutterFlowTheme.of(context)
+                                                      .titleSmallFamily,
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primaryText,
+                                              letterSpacing: 0.0,
+                                              useGoogleFonts:
+                                                  !FlutterFlowTheme.of(context)
+                                                      .titleSmallIsCustom,
+                                            ),
+                                        elevation: 0.0,
+                                        borderSide: BorderSide(
+                                          color: FlutterFlowTheme.of(context)
+                                              .primaryBackground,
+                                        ),
+                                        borderRadius:
+                                            BorderRadius.circular(12.0),
                                       ),
                                     ),
-                                    padding: EdgeInsets.zero,
-                                    reverse: false,
-                                    scrollDirection: Axis.vertical,
-                                    builderDelegate:
-                                        PagedChildBuilderDelegate<dynamic>(
-                                      // Customize what your widget looks like when it's loading the first page.
-                                      firstPageProgressIndicatorBuilder: (_) =>
-                                          Center(
-                                        child: SizedBox(
-                                          width: 20.0,
-                                          height: 20.0,
-                                          child: SpinKitRing(
-                                            color: FlutterFlowTheme.of(context)
-                                                .primary,
-                                            size: 20.0,
-                                          ),
+                                  if (_model.placeTypeSeletedName != null &&
+                                      _model.placeTypeSeletedName != '')
+                                    FFButtonWidget(
+                                      onPressed: () {
+                                        print('Button pressed ...');
+                                      },
+                                      text: _model.placeTypeSeletedName!,
+                                      icon: Icon(
+                                        Icons.close_sharp,
+                                        size: 15.0,
+                                      ),
+                                      options: FFButtonOptions(
+                                        height:
+                                            MediaQuery.sizeOf(context).height *
+                                                0.04,
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            10.0, 0.0, 10.0, 0.0),
+                                        iconAlignment: IconAlignment.end,
+                                        iconPadding:
+                                            EdgeInsetsDirectional.fromSTEB(
+                                                0.0, 0.0, 0.0, 0.0),
+                                        color: FlutterFlowTheme.of(context)
+                                            .secondaryBackground,
+                                        textStyle: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .override(
+                                              fontFamily:
+                                                  FlutterFlowTheme.of(context)
+                                                      .bodyMediumFamily,
+                                              letterSpacing: 0.0,
+                                              useGoogleFonts:
+                                                  !FlutterFlowTheme.of(context)
+                                                      .bodyMediumIsCustom,
+                                            ),
+                                        elevation: 0.0,
+                                        borderSide: BorderSide(
+                                          color: FlutterFlowTheme.of(context)
+                                              .alternate,
+                                        ),
+                                        borderRadius: BorderRadius.only(
+                                          bottomLeft: Radius.circular(0.0),
+                                          bottomRight: Radius.circular(0.0),
+                                          topLeft: Radius.circular(0.0),
+                                          topRight: Radius.circular(0.0),
                                         ),
                                       ),
-                                      // Customize what your widget looks like when it's loading another page.
-                                      newPageProgressIndicatorBuilder: (_) =>
-                                          Center(
-                                        child: SizedBox(
-                                          width: 20.0,
-                                          height: 20.0,
-                                          child: SpinKitRing(
-                                            color: FlutterFlowTheme.of(context)
-                                                .primary,
-                                            size: 20.0,
-                                          ),
-                                        ),
-                                      ),
-                                      noItemsFoundIndicatorBuilder: (_) =>
-                                          Center(
-                                        child: SizedBox(
-                                          width:
-                                              MediaQuery.sizeOf(context).width *
-                                                  0.9,
-                                          height: MediaQuery.sizeOf(context)
-                                                  .height *
+                                    ),
+                                ].divide(SizedBox(width: 10.0)),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Flexible(
+                          child: Container(
+                            decoration: BoxDecoration(),
+                            child: Visibility(
+                              visible: _model.pageLoad,
+                              child: PagedListView<ApiPagingParams,
+                                  dynamic>.separated(
+                                pagingController:
+                                    _model.setVenueListViewController(
+                                  (nextPageMarker) =>
+                                      VenuesGroup.getAllVenuesCall.call(
+                                    filters: functions.venueFilterInputFunction(
+                                        functions.distanceSelectionConverter(
+                                            FFAppState().distance),
+                                        functions
+                                            .topFilterTypeSelectionConverter(_model.venueAggregation
+                                                .toList())
+                                            ?.unique((e) => e)
+                                            .toList(),
+                                        functions
+                                            .topFilterTypeSelectionConverter(
+                                                _model.activityTypeAggregation
+                                                    .toList())
+                                            ?.unique((e) => e)
+                                            .toList(),
+                                        functions
+                                            .topFilterTypeSelectionConverter(
+                                                _model.sportstypeAggregation
+                                                    .toList())
+                                            ?.unique((e) => e)
+                                            .toList(),
+                                        functions
+                                            .topFilterTypeSelectionConverter(
+                                                _model.pricefactorAggregation
+                                                    .toList())
+                                            ?.unique((e) => e)
+                                            .toList(),
+                                        functions
+                                            .topFilterTypeSelectionConverter(
+                                                _model.rankingAggregation
+                                                    .toList())
+                                            ?.unique((e) => e)
+                                            .toList(),
+                                        functions
+                                            .topFilterTypeSelectionConverter(_model.ageRangeAggregation.toList())
+                                            ?.unique((e) => e)
+                                            .toList(),
+                                        functions.topFilterTypeSelectionConverter(_model.townAggregation.toList())?.unique((e) => e).toList(),
+                                        functions.topFilterTypeSelectionConverter(_model.capacityAggregation.toList())?.unique((e) => e).toList(),
+                                        functions.topFilterTypeSelectionConverter(_model.demographicsAggregation.toList())?.unique((e) => e).toList(),
+                                        _model.placeTypeSelectedId,
+                                        FFAppState().latitude,
+                                        FFAppState().longituade,
+                                        functions.topFilterTypeSelectionConverter(_model.activityCategoryAggregation.toList())?.unique((e) => e).toList()),
+                                    searchText: valueOrDefault<String>(
+                                      Uri.encodeComponent(_model.searchuery),
+                                      '*',
+                                    ),
+                                    pageNumber:
+                                        nextPageMarker.nextPageNumber + 1,
+                                    startIndex:
+                                        nextPageMarker.nextPageNumber * 20,
+                                    limit: 20,
+                                    sortQueryJson:
+                                        functions.getSortingAttributes(
+                                            _model.sortType, _model.sortOrder),
+                                    token: FFAppState().SessionToken,
+                                  ),
+                                ),
+                                padding: EdgeInsets.zero,
+                                primary: false,
+                                shrinkWrap: true,
+                                reverse: false,
+                                scrollDirection: Axis.vertical,
+                                separatorBuilder: (_, __) =>
+                                    SizedBox(height: 6.0),
+                                builderDelegate:
+                                    PagedChildBuilderDelegate<dynamic>(
+                                  // Customize what your widget looks like when it's loading the first page.
+                                  firstPageProgressIndicatorBuilder: (_) =>
+                                      Center(
+                                    child: Container(
+                                      width: MediaQuery.sizeOf(context).width *
+                                          0.9,
+                                      height:
+                                          MediaQuery.sizeOf(context).height *
                                               0.9,
-                                          child: const ErrorCompoentWidget(),
+                                      child: LoadingCompWidget(),
+                                    ),
+                                  ),
+                                  // Customize what your widget looks like when it's loading another page.
+                                  newPageProgressIndicatorBuilder: (_) =>
+                                      Center(
+                                    child: Container(
+                                      width: MediaQuery.sizeOf(context).width *
+                                          0.9,
+                                      height:
+                                          MediaQuery.sizeOf(context).height *
+                                              0.9,
+                                      child: LoadingCompWidget(),
+                                    ),
+                                  ),
+                                  noItemsFoundIndicatorBuilder: (_) => Center(
+                                    child: Container(
+                                      width: MediaQuery.sizeOf(context).width *
+                                          0.9,
+                                      height:
+                                          MediaQuery.sizeOf(context).height *
+                                              0.9,
+                                      child: ImageErrorCompoentWidget(
+                                        image:
+                                            'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/celebratix-u9fafm/assets/kyqz82poydem/No-Venues-logo.png',
+                                      ),
+                                    ),
+                                  ),
+                                  itemBuilder: (context, _, eachVenueIndex) {
+                                    final eachVenueItem = _model
+                                        .venueListViewPagingController!
+                                        .itemList![eachVenueIndex];
+                                    return Container(
+                                      decoration: BoxDecoration(
+                                        color: FlutterFlowTheme.of(context)
+                                            .secondaryBackground,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            blurRadius: 4.0,
+                                            color: Color(0x33000000),
+                                            offset: Offset(
+                                              0.0,
+                                              2.0,
+                                            ),
+                                          )
+                                        ],
+                                        borderRadius:
+                                            BorderRadius.circular(6.0),
+                                        border: Border.all(
+                                          color: FlutterFlowTheme.of(context)
+                                              .primaryBackground,
                                         ),
                                       ),
-                                      itemBuilder:
-                                          (context, _, eachVenueIndex) {
-                                        final eachVenueItem = _model
-                                            .venueListViewPagingController!
-                                            .itemList![eachVenueIndex];
-                                        return Padding(
-                                          padding:
-                                              const EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 16.0, 16.0, 16.0),
-                                          child: Column(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.max,
+                                        children: [
+                                          Column(
                                             mainAxisSize: MainAxisSize.max,
                                             children: [
-                                              Container(
-                                                width: double.infinity,
-                                                decoration: BoxDecoration(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .secondaryBackground,
+                                              Padding(
+                                                padding: EdgeInsetsDirectional
+                                                    .fromSTEB(
+                                                        10.0, 0.0, 10.0, 0.0),
+                                                child: Container(
+                                                  width: double.infinity,
+                                                  height:
+                                                      MediaQuery.sizeOf(context)
+                                                              .height *
+                                                          0.24,
+                                                  decoration: BoxDecoration(
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .secondaryBackground,
+                                                  ),
+                                                  child: Align(
+                                                    alignment:
+                                                        AlignmentDirectional(
+                                                            0.0, 0.0),
+                                                    child: wrapWithModel(
+                                                      model: _model
+                                                          .pageViewcOMPModels
+                                                          .getModel(
+                                                        getJsonField(
+                                                          eachVenueItem,
+                                                          r'''$['venueMoreFields-_-resourcePhotos']''',
+                                                        ).toString(),
+                                                        eachVenueIndex,
+                                                      ),
+                                                      updateCallback: () =>
+                                                          safeSetState(() {}),
+                                                      child: PageViewcOMPWidget(
+                                                        key: Key(
+                                                          'Keypwg_${getJsonField(
+                                                            eachVenueItem,
+                                                            r'''$['venueMoreFields-_-resourcePhotos']''',
+                                                          ).toString()}',
+                                                        ),
+                                                        photos: getJsonField(
+                                                          eachVenueItem,
+                                                          r'''$['venueMoreFields-_-resourcePhotos']''',
+                                                          true,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
                                                 ),
-                                                child: Padding(
-                                                  padding: const EdgeInsetsDirectional
-                                                      .fromSTEB(12.0, 12.0,
-                                                          12.0, 12.0),
+                                              ),
+                                              Padding(
+                                                padding: EdgeInsetsDirectional
+                                                    .fromSTEB(
+                                                        12.0, 0.0, 12.0, 12.0),
+                                                child: InkWell(
+                                                  splashColor:
+                                                      Colors.transparent,
+                                                  focusColor:
+                                                      Colors.transparent,
+                                                  hoverColor:
+                                                      Colors.transparent,
+                                                  highlightColor:
+                                                      Colors.transparent,
+                                                  onTap: () async {
+                                                    context.pushNamed(
+                                                      VenueDetailsWidget
+                                                          .routeName,
+                                                      queryParameters: {
+                                                        'venueId':
+                                                            serializeParam(
+                                                          getJsonField(
+                                                            eachVenueItem,
+                                                            r'''$._id''',
+                                                          ),
+                                                          ParamType.int,
+                                                        ),
+                                                      }.withoutNulls,
+                                                      extra: <String, dynamic>{
+                                                        kTransitionInfoKey:
+                                                            TransitionInfo(
+                                                          hasTransition: true,
+                                                          transitionType:
+                                                              PageTransitionType
+                                                                  .bottomToTop,
+                                                        ),
+                                                      },
+                                                    );
+                                                  },
                                                   child: Column(
                                                     mainAxisSize:
-                                                        MainAxisSize.max,
+                                                        MainAxisSize.min,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.start,
                                                     crossAxisAlignment:
                                                         CrossAxisAlignment
                                                             .start,
                                                     children: [
-                                                      Row(
+                                                      Column(
                                                         mainAxisSize:
-                                                            MainAxisSize.max,
+                                                            MainAxisSize.min,
                                                         mainAxisAlignment:
                                                             MainAxisAlignment
                                                                 .start,
@@ -1035,656 +1251,835 @@ class _AllVenueWidgetState extends State<AllVenueWidget> {
                                                             CrossAxisAlignment
                                                                 .start,
                                                         children: [
-                                                          Container(
-                                                            width: 118.0,
-                                                            height: 130.0,
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .secondaryBackground,
+                                                          Text(
+                                                            valueOrDefault<
+                                                                String>(
+                                                              getJsonField(
+                                                                eachVenueItem,
+                                                                r'''$.name''',
+                                                              )?.toString(),
+                                                              'Name',
                                                             ),
-                                                            child: Column(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .max,
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .spaceBetween,
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                Padding(
-                                                                  padding: const EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          20.0,
-                                                                          0.0),
-                                                                  child:
-                                                                      ClipRRect(
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            12.0),
-                                                                    child: Image
-                                                                        .network(
-                                                                      getJsonField(
-                                                                        eachVenueItem,
-                                                                        r'''$.logo''',
-                                                                      ).toString(),
-                                                                      width: double
-                                                                          .infinity,
-                                                                      height:
-                                                                          104.0,
-                                                                      fit: BoxFit
-                                                                          .cover,
-                                                                      errorBuilder: (context,
-                                                                              error,
-                                                                              stackTrace) =>
-                                                                          Image
-                                                                              .asset(
-                                                                        'assets/images/error_image.jpeg',
-                                                                        width: double
-                                                                            .infinity,
-                                                                        height:
-                                                                            104.0,
-                                                                        fit: BoxFit
-                                                                            .cover,
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                FFButtonWidget(
-                                                                  onPressed:
-                                                                      () async {
-                                                                    context
-                                                                        .pushNamed(
-                                                                      'VenueDetails',
-                                                                      queryParameters:
-                                                                          {
-                                                                        'venueId':
-                                                                            serializeParam(
-                                                                          getJsonField(
-                                                                            eachVenueItem,
-                                                                            r'''$._id''',
-                                                                          ),
-                                                                          ParamType
-                                                                              .int,
-                                                                        ),
-                                                                      }.withoutNulls,
-                                                                    );
-                                                                  },
-                                                                  text:
-                                                                      'More Info',
-                                                                  options:
-                                                                      FFButtonOptions(
-                                                                    width: 97.0,
-                                                                    height:
-                                                                        19.0,
-                                                                    padding: const EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0),
-                                                                    iconPadding:
-                                                                        const EdgeInsetsDirectional.fromSTEB(
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0),
-                                                                    color: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .secondaryBackground,
-                                                                    textStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .labelSmall
-                                                                        .override(
-                                                                          fontFamily:
-                                                                              'Readex Pro',
-                                                                          color:
-                                                                              FlutterFlowTheme.of(context).primaryText,
-                                                                          fontSize:
-                                                                              12.0,
-                                                                          letterSpacing:
-                                                                              0.0,
-                                                                        ),
-                                                                    elevation:
-                                                                        0.0,
-                                                                    borderSide:
-                                                                        BorderSide(
-                                                                      color: FlutterFlowTheme.of(
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .titleMedium
+                                                                .override(
+                                                                  fontFamily: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .titleMediumFamily,
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .primaryText,
+                                                                  fontSize:
+                                                                      20.0,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600,
+                                                                  useGoogleFonts:
+                                                                      !FlutterFlowTheme.of(
                                                                               context)
-                                                                          .alternate,
-                                                                    ),
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            20.0),
-                                                                  ),
+                                                                          .titleMediumIsCustom,
                                                                 ),
-                                                              ].divide(const SizedBox(
-                                                                  height: 3.0)),
-                                                            ),
                                                           ),
-                                                          Expanded(
-                                                            child: Container(
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                color: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .secondaryBackground,
-                                                              ),
-                                                              child: Column(
+                                                          Text(
+                                                            valueOrDefault<
+                                                                String>(
+                                                              getJsonField(
+                                                                eachVenueItem,
+                                                                r'''$.address''',
+                                                              )?.toString(),
+                                                              'address ',
+                                                            ),
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .labelSmall
+                                                                .override(
+                                                                  fontFamily: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .labelSmallFamily,
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .primaryText,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                  useGoogleFonts:
+                                                                      !FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .labelSmallIsCustom,
+                                                                ),
+                                                          ),
+                                                        ].divide(SizedBox(
+                                                            height: 2.0)),
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsetsDirectional
+                                                                .fromSTEB(
+                                                                    0.0,
+                                                                    1.0,
+                                                                    0.0,
+                                                                    2.0),
+                                                        child: Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            Flexible(
+                                                              child: Row(
                                                                 mainAxisSize:
                                                                     MainAxisSize
                                                                         .max,
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .start,
                                                                 children: [
-                                                                  Text(
-                                                                    getJsonField(
-                                                                      eachVenueItem,
-                                                                      r'''$.name''',
-                                                                    ).toString(),
-                                                                    style: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .override(
-                                                                          fontFamily:
-                                                                              'Readex Pro',
-                                                                          color:
-                                                                              FlutterFlowTheme.of(context).primaryText,
-                                                                          letterSpacing:
-                                                                              0.0,
-                                                                        ),
-                                                                  ),
-                                                                  Text(
-                                                                    getJsonField(
-                                                                      eachVenueItem,
-                                                                      r'''$.address''',
-                                                                    ).toString(),
-                                                                    style: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .labelSmall
-                                                                        .override(
-                                                                          fontFamily:
-                                                                              'Readex Pro',
-                                                                          color:
-                                                                              FlutterFlowTheme.of(context).primaryText,
-                                                                          letterSpacing:
-                                                                              0.0,
-                                                                        ),
-                                                                  ),
-                                                                  Row(
-                                                                    mainAxisSize:
-                                                                        MainAxisSize
-                                                                            .max,
-                                                                    children: [
-                                                                      Text(
-                                                                        getJsonField(
-                                                                          eachVenueItem,
-                                                                          r'''$.overallRank''',
-                                                                        ).toString(),
-                                                                        style: FlutterFlowTheme.of(context)
-                                                                            .labelMedium
-                                                                            .override(
-                                                                              fontFamily: 'Readex Pro',
-                                                                              color: FlutterFlowTheme.of(context).primaryText,
-                                                                              letterSpacing: 0.0,
-                                                                            ),
-                                                                      ),
-                                                                      Icon(
-                                                                        Icons
-                                                                            .star_rounded,
+                                                                  Flexible(
+                                                                    child:
+                                                                        Container(
+                                                                      decoration:
+                                                                          BoxDecoration(
                                                                         color: FlutterFlowTheme.of(context)
                                                                             .secondaryBackground,
-                                                                        size:
-                                                                            20.0,
                                                                       ),
-                                                                    ],
-                                                                  ),
-                                                                  Text(
-                                                                    getJsonField(
-                                                                      eachVenueItem,
-                                                                      r'''$['venueMoreFields-_-price']''',
-                                                                    ).toString(),
-                                                                    style: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .override(
-                                                                          fontFamily:
-                                                                              'Readex Pro',
-                                                                          color:
-                                                                              FlutterFlowTheme.of(context).primaryText,
-                                                                          letterSpacing:
-                                                                              0.0,
-                                                                        ),
-                                                                  ),
-                                                                  Text(
-                                                                    'Venue Type :${getJsonField(
-                                                                      eachVenueItem,
-                                                                      r'''$.venueType''',
-                                                                    ).toString()}',
-                                                                    style: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .override(
-                                                                          fontFamily:
-                                                                              'Readex Pro',
-                                                                          color:
-                                                                              FlutterFlowTheme.of(context).primaryText,
-                                                                          letterSpacing:
-                                                                              0.0,
-                                                                        ),
-                                                                  ),
-                                                                  Text(
-                                                                    'Type :${getJsonField(
-                                                                          eachVenueItem,
-                                                                          r'''$['venueMoreFields-_-sportsType']''',
-                                                                        ) != null ? getJsonField(
-                                                                        eachVenueItem,
-                                                                        r'''$['venueMoreFields-_-sportsType']''',
-                                                                      ).toString() : '   '}${getJsonField(
-                                                                      eachVenueItem,
-                                                                      r'''$['venueMoreFields-_-activityType']''',
-                                                                    ).toString()}${'celebratix://celebratix.com${GoRouterState.of(context).uri.toString()}'}',
-                                                                    style: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .override(
-                                                                          fontFamily:
-                                                                              'Readex Pro',
-                                                                          color:
-                                                                              FlutterFlowTheme.of(context).primaryText,
-                                                                          letterSpacing:
-                                                                              0.0,
-                                                                        ),
+                                                                      child:
+                                                                          Column(
+                                                                        mainAxisSize:
+                                                                            MainAxisSize.min,
+                                                                        crossAxisAlignment:
+                                                                            CrossAxisAlignment.start,
+                                                                        children:
+                                                                            [
+                                                                          Row(
+                                                                            mainAxisSize:
+                                                                                MainAxisSize.max,
+                                                                            children:
+                                                                                [
+                                                                              wrapWithModel(
+                                                                                model: _model.ratingCompModels.getModel(
+                                                                                  valueOrDefault<String>(
+                                                                                    getJsonField(
+                                                                                      eachVenueItem,
+                                                                                      r'''$.overallRank''',
+                                                                                    )?.toString(),
+                                                                                    '0',
+                                                                                  ),
+                                                                                  eachVenueIndex,
+                                                                                ),
+                                                                                updateCallback: () => safeSetState(() {}),
+                                                                                child: RatingCompWidget(
+                                                                                  key: Key(
+                                                                                    'Keylgx_${valueOrDefault<String>(
+                                                                                      getJsonField(
+                                                                                        eachVenueItem,
+                                                                                        r'''$.overallRank''',
+                                                                                      )?.toString(),
+                                                                                      '0',
+                                                                                    )}',
+                                                                                  ),
+                                                                                  rank: valueOrDefault<String>(
+                                                                                    getJsonField(
+                                                                                      eachVenueItem,
+                                                                                      r'''$.overallRank''',
+                                                                                    )?.toString(),
+                                                                                    '0',
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                            ].divide(SizedBox(width: 2.0)),
+                                                                          ),
+                                                                          Row(
+                                                                            mainAxisSize:
+                                                                                MainAxisSize.max,
+                                                                            children:
+                                                                                [
+                                                                              Icon(
+                                                                                Icons.monetization_on_rounded,
+                                                                                color: FlutterFlowTheme.of(context).primaryText,
+                                                                                size: 20.0,
+                                                                              ),
+                                                                              Flexible(
+                                                                                child: Text(
+                                                                                  valueOrDefault<String>(
+                                                                                    '${getJsonField(
+                                                                                      eachVenueItem,
+                                                                                      r'''$['venueMoreFields-_-price']''',
+                                                                                    ).toString()}',
+                                                                                    'Price On Request',
+                                                                                  ),
+                                                                                  style: FlutterFlowTheme.of(context).labelSmall.override(
+                                                                                        fontFamily: FlutterFlowTheme.of(context).labelSmallFamily,
+                                                                                        color: FlutterFlowTheme.of(context).primaryText,
+                                                                                        fontSize: 14.0,
+                                                                                        letterSpacing: 0.0,
+                                                                                        useGoogleFonts: !FlutterFlowTheme.of(context).labelSmallIsCustom,
+                                                                                      ),
+                                                                                ),
+                                                                              ),
+                                                                            ].divide(SizedBox(width: 4.0)),
+                                                                          ),
+                                                                          Text(
+                                                                            getJsonField(
+                                                                              eachVenueItem,
+                                                                              r'''$.venueType''',
+                                                                            ).toString(),
+                                                                            style: FlutterFlowTheme.of(context).labelSmall.override(
+                                                                                  fontFamily: FlutterFlowTheme.of(context).labelSmallFamily,
+                                                                                  color: FlutterFlowTheme.of(context).primaryText,
+                                                                                  fontSize: 14.0,
+                                                                                  letterSpacing: 0.0,
+                                                                                  useGoogleFonts: !FlutterFlowTheme.of(context).labelSmallIsCustom,
+                                                                                ),
+                                                                          ),
+                                                                          Text(
+                                                                            '${getJsonField(
+                                                                                  eachVenueItem,
+                                                                                  r'''$['venueMoreFields-_-sportsType']''',
+                                                                                ) != null ? '${getJsonField(
+                                                                                eachVenueItem,
+                                                                                r'''$['venueMoreFields-_-sportsType']''',
+                                                                              ).toString()}' : ''}${getJsonField(
+                                                                              eachVenueItem,
+                                                                              r'''$['venueMoreFields-_-activityType']''',
+                                                                            ).toString()}',
+                                                                            style: FlutterFlowTheme.of(context).labelSmall.override(
+                                                                                  fontFamily: FlutterFlowTheme.of(context).labelSmallFamily,
+                                                                                  color: FlutterFlowTheme.of(context).primaryText,
+                                                                                  fontSize: 14.0,
+                                                                                  letterSpacing: 0.0,
+                                                                                  useGoogleFonts: !FlutterFlowTheme.of(context).labelSmallIsCustom,
+                                                                                ),
+                                                                          ),
+                                                                        ].divide(SizedBox(height: 2.0)),
+                                                                      ),
+                                                                    ),
                                                                   ),
                                                                 ],
                                                               ),
                                                             ),
-                                                          ),
-                                                        ],
+                                                            Row(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .max,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .end,
+                                                              children: [
+                                                                Container(
+                                                                  width: MediaQuery.sizeOf(
+                                                                              context)
+                                                                          .width *
+                                                                      0.24,
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                    color: FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .secondaryBackground,
+                                                                  ),
+                                                                  child: Column(
+                                                                    mainAxisSize:
+                                                                        MainAxisSize
+                                                                            .max,
+                                                                    mainAxisAlignment:
+                                                                        MainAxisAlignment
+                                                                            .end,
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                    children: [
+                                                                      InkWell(
+                                                                        splashColor:
+                                                                            Colors.transparent,
+                                                                        focusColor:
+                                                                            Colors.transparent,
+                                                                        hoverColor:
+                                                                            Colors.transparent,
+                                                                        highlightColor:
+                                                                            Colors.transparent,
+                                                                        onTap:
+                                                                            () async {
+                                                                          context
+                                                                              .pushNamed(
+                                                                            VenueDetailsWidget.routeName,
+                                                                            queryParameters:
+                                                                                {
+                                                                              'venueId': serializeParam(
+                                                                                getJsonField(
+                                                                                  eachVenueItem,
+                                                                                  r'''$._id''',
+                                                                                ),
+                                                                                ParamType.int,
+                                                                              ),
+                                                                            }.withoutNulls,
+                                                                            extra: <String,
+                                                                                dynamic>{
+                                                                              kTransitionInfoKey: TransitionInfo(
+                                                                                hasTransition: true,
+                                                                                transitionType: PageTransitionType.bottomToTop,
+                                                                              ),
+                                                                            },
+                                                                          );
+                                                                        },
+                                                                        child:
+                                                                            ClipRRect(
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(0.0),
+                                                                          child:
+                                                                              Image.network(
+                                                                            functions.validateAndFormatUrl(
+                                                                                getJsonField(
+                                                                                  eachVenueItem,
+                                                                                  r'''$.logo''',
+                                                                                ).toString(),
+                                                                                FFDevEnvironmentValues().BaseUrl)!,
+                                                                            width:
+                                                                                double.infinity,
+                                                                            height:
+                                                                                MediaQuery.sizeOf(context).height * 0.104,
+                                                                            fit:
+                                                                                BoxFit.contain,
+                                                                            errorBuilder: (context, error, stackTrace) =>
+                                                                                Image.asset(
+                                                                              'assets/images/error_image.png',
+                                                                              width: double.infinity,
+                                                                              height: MediaQuery.sizeOf(context).height * 0.104,
+                                                                              fit: BoxFit.contain,
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
                                                       ),
                                                     ],
                                                   ),
                                                 ),
                                               ),
-                                              Divider(
-                                                thickness: 1.0,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .secondaryText,
-                                              ),
                                             ],
                                           ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (_model.showSerchResult)
-                        Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(
-                              0.0, 59.0, 0.0, 0.0),
-                          child: Container(
-                            width: double.infinity,
-                            height: double.infinity,
-                            decoration: BoxDecoration(
-                              color: FlutterFlowTheme.of(context)
-                                  .secondaryBackground,
-                            ),
-                            child: FutureBuilder<ApiCallResponse>(
-                              future: VenuesGroup.venueSuggestionCall.call(
-                                searchVenueQuery:
-                                    _model.searchFieldTextController.text,
-                                uiContext: valueOrDefault<String>(
-                                  functions.suggestionCursorInput(
-                                      valueOrDefault<String>(
-                                        _model.searchFieldTextController.text,
-                                        'CupCake',
+                                        ],
                                       ),
-                                      valueOrDefault<String>(
-                                        functions.distanceSelectionConverter(
-                                            _model.distanceSelectionOutput !=
-                                                        null &&
-                                                    _model.distanceSelectionOutput !=
-                                                        ''
-                                                ? _model
-                                                    .distanceSelectionOutput!
-                                                : '55'),
-                                        '25',
-                                      ),
-                                      42.4597,
-                                      -71.0638,
-                                      valueOrDefault<String>(
-                                        _model.placeSelectionOutput,
-                                        '1',
-                                      )),
-                                  '2',
-                                ),
-                              ),
-                              builder: (context, snapshot) {
-                                // Customize what your widget looks like when it's loading.
-                                if (!snapshot.hasData) {
-                                  return Center(
-                                    child: SizedBox(
-                                      width: 20.0,
-                                      height: 20.0,
-                                      child: SpinKitRing(
-                                        color: FlutterFlowTheme.of(context)
-                                            .primary,
-                                        size: 20.0,
-                                      ),
-                                    ),
-                                  );
-                                }
-                                final listViewVenueSuggestionResponse =
-                                    snapshot.data!;
-                                return Builder(
-                                  builder: (context) {
-                                    final suggestions =
-                                        VenuesGroup.venueSuggestionCall
-                                                .key(
-                                                  listViewVenueSuggestionResponse
-                                                      .jsonBody,
-                                                )
-                                                ?.unique((e) => e)
-                                                .toList() ??
-                                            [];
-                                    return ListView.builder(
-                                      padding: EdgeInsets.zero,
-                                      scrollDirection: Axis.vertical,
-                                      itemCount: suggestions.length,
-                                      itemBuilder: (context, suggestionsIndex) {
-                                        final suggestionsItem =
-                                            suggestions[suggestionsIndex];
-                                        return Align(
-                                          alignment:
-                                              const AlignmentDirectional(-1.0, 0.0),
-                                          child: Padding(
-                                            padding:
-                                                const EdgeInsetsDirectional.fromSTEB(
-                                                    8.0, 10.0, 0.0, 10.0),
-                                            child: InkWell(
-                                              splashColor: Colors.transparent,
-                                              focusColor: Colors.transparent,
-                                              hoverColor: Colors.transparent,
-                                              highlightColor:
-                                                  Colors.transparent,
-                                              onTap: () async {
-                                                setState(() {
-                                                  _model
-                                                      .searchFieldTextController
-                                                      ?.text = suggestionsItem;
-                                                });
-                                                _model.searchuery = _model.searchFieldTextController
-                                                                .text !=
-                                                            ''
-                                                    ? _model
-                                                        .searchFieldTextController
-                                                        .text
-                                                    : '*';
-                                                _model.showSerchResult = false;
-                                                setState(() => _model
-                                                        .apiRequestCompleter2 =
-                                                    null);
-                                                await _model
-                                                    .waitForApiRequestCompleted2();
-                                                setState(() => _model
-                                                    .venueListViewPagingController
-                                                    ?.refresh());
-                                                await _model
-                                                    .waitForOnePageForVenueListView();
-                                              },
-                                              child: Text(
-                                                suggestionsItem,
-                                                textAlign: TextAlign.start,
-                                                style: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      fontFamily: 'Readex Pro',
-                                                      color:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primaryText,
-                                                      fontSize: 16.0,
-                                                      letterSpacing: 0.0,
-                                                      fontStyle:
-                                                          FontStyle.italic,
-                                                    ),
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      },
                                     );
                                   },
-                                );
-                              },
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      Align(
-                        alignment: const AlignmentDirectional(1.0, 1.0),
-                        child: Builder(
-                          builder: (context) => Padding(
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                0.0, 0.0, 25.0, 20.0),
-                            child: FlutterFlowIconButton(
-                              borderColor:
-                                  FlutterFlowTheme.of(context).primaryText,
-                              borderRadius: 20.0,
-                              borderWidth: 1.0,
-                              buttonSize: 51.0,
-                              fillColor: FlutterFlowTheme.of(context)
-                                  .primaryBackground,
-                              icon: FaIcon(
-                                FontAwesomeIcons.map,
-                                color: FlutterFlowTheme.of(context).primaryText,
-                                size: 24.0,
-                              ),
-                              onPressed: () async {
-                                await showDialog(
-                                  context: context,
-                                  builder: (dialogContext) {
-                                    return Dialog(
-                                      elevation: 0,
-                                      insetPadding: EdgeInsets.zero,
-                                      backgroundColor: Colors.transparent,
-                                      alignment: const AlignmentDirectional(0.0, 1.0)
-                                          .resolve(Directionality.of(context)),
+                      ],
+                    ),
+                    Padding(
+                      padding:
+                          EdgeInsetsDirectional.fromSTEB(0.0, 114.0, 0.0, 0.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color:
+                              FlutterFlowTheme.of(context).secondaryBackground,
+                          borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(8.0),
+                            bottomRight: Radius.circular(8.0),
+                            topLeft: Radius.circular(0.0),
+                            topRight: Radius.circular(0.0),
+                          ),
+                          border: Border.all(
+                            color: FlutterFlowTheme.of(context).alternate,
+                          ),
+                        ),
+                        child: Visibility(
+                          visible: _model.showSerchResult,
+                          child: FutureBuilder<ApiCallResponse>(
+                            future: (_model.apiRequestCompleter1 ??=
+                                    Completer<ApiCallResponse>()
+                                      ..complete(
+                                          VenuesGroup.venueSuggestionCall.call(
+                                        searchVenueQuery:
+                                            valueOrDefault<String>(
+                                          Uri.encodeComponent(_model
+                                              .venueSearchFieldTextController
+                                              .text),
+                                          '*',
+                                        ),
+                                        uiContext:
+                                            '{\"key\":\"venueTabContent\",\"params\":{},\"component\":{\"clientId\":\"venueTabContent__venueTopFilterPanel\",\"clientState\":{\"clientId\":\"venueTabContent__venueTopFilterPanel\",\"query\":\"${valueOrDefault<String>(
+                                          Uri.encodeComponent(_model
+                                              .venueSearchFieldTextController
+                                              .text),
+                                          '*',
+                                        )}\"}}}',
+                                        distance: functions
+                                            .distanceSelectionConverter(
+                                                FFAppState().distance),
+                                        token: FFAppState().SessionToken,
+                                      )))
+                                .future,
+                            builder: (context, snapshot) {
+                              // Customize what your widget looks like when it's loading.
+                              if (!snapshot.hasData) {
+                                return Center(
+                                  child: SizedBox(
+                                    width: 11.0,
+                                    height: 11.0,
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        FlutterFlowTheme.of(context).primary,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
+                              final suggestionListViewVenueSuggestionResponse =
+                                  snapshot.data!;
+
+                              return Builder(
+                                builder: (context) {
+                                  final suggestions =
+                                      VenuesGroup.venueSuggestionCall
+                                              .text(
+                                                suggestionListViewVenueSuggestionResponse
+                                                    .jsonBody,
+                                              )
+                                              ?.unique((e) => e)
+                                              .toList() ??
+                                          [];
+                                  if (suggestions.isEmpty) {
+                                    return Center(
+                                      child: ErrorCompoentWidget(),
+                                    );
+                                  }
+
+                                  return ListView.separated(
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 4.0),
+                                    primary: false,
+                                    shrinkWrap: true,
+                                    scrollDirection: Axis.vertical,
+                                    itemCount: suggestions.length,
+                                    separatorBuilder: (_, __) =>
+                                        SizedBox(height: 4.0),
+                                    itemBuilder: (context, suggestionsIndex) {
+                                      final suggestionsItem =
+                                          suggestions[suggestionsIndex];
+                                      return Visibility(
+                                        visible: VenuesGroup.venueSuggestionCall
+                                                .key(
+                                                  suggestionListViewVenueSuggestionResponse
+                                                      .jsonBody,
+                                                )!
+                                                .length >=
+                                            2,
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.max,
+                                          children: [
+                                            Padding(
+                                              padding: EdgeInsetsDirectional
+                                                  .fromSTEB(
+                                                      10.0, 0.0, 10.0, 0.0),
+                                              child: InkWell(
+                                                splashColor: Colors.transparent,
+                                                focusColor: Colors.transparent,
+                                                hoverColor: Colors.transparent,
+                                                highlightColor:
+                                                    Colors.transparent,
+                                                onTap: () async {
+                                                  safeSetState(() {
+                                                    _model
+                                                        .venueSearchFieldTextController
+                                                        ?.text = suggestionsItem;
+                                                  });
+                                                  _model.searchuery = _model.venueSearchFieldTextController
+                                                                  .text !=
+                                                              ''
+                                                      ? _model
+                                                          .venueSearchFieldTextController
+                                                          .text
+                                                      : '*';
+                                                  _model.showSerchResult =
+                                                      false;
+                                                  safeSetState(() => _model
+                                                      .venueListViewPagingController
+                                                      ?.refresh());
+                                                  await _model
+                                                      .waitForOnePageForVenueListView();
+                                                },
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .secondaryBackground,
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    children: [
+                                                      Icon(
+                                                        Icons.search,
+                                                        color:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .primaryText,
+                                                        size: 24.0,
+                                                      ),
+                                                      Flexible(
+                                                        child: Align(
+                                                          alignment:
+                                                              AlignmentDirectional(
+                                                                  -1.0, 0.0),
+                                                          child: Padding(
+                                                            padding:
+                                                                EdgeInsets.all(
+                                                                    10.0),
+                                                            child: Text(
+                                                              suggestionsItem,
+                                                              style: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .bodyMedium
+                                                                  .override(
+                                                                    fontFamily:
+                                                                        FlutterFlowTheme.of(context)
+                                                                            .bodyMediumFamily,
+                                                                    letterSpacing:
+                                                                        0.0,
+                                                                    fontStyle:
+                                                                        FontStyle
+                                                                            .italic,
+                                                                    useGoogleFonts:
+                                                                        !FlutterFlowTheme.of(context)
+                                                                            .bodyMediumIsCustom,
+                                                                  ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                    Align(
+                      alignment: AlignmentDirectional(1.0, 1.0),
+                      child: Builder(
+                        builder: (context) => Padding(
+                          padding: EdgeInsetsDirectional.fromSTEB(
+                              0.0, 0.0, 25.0, 20.0),
+                          child: FlutterFlowIconButton(
+                            borderRadius: 20.0,
+                            borderWidth: 1.0,
+                            buttonSize: 51.0,
+                            fillColor: Color(0xFFFDAB9D),
+                            icon: FaIcon(
+                              FontAwesomeIcons.map,
+                              color: FlutterFlowTheme.of(context).primaryText,
+                              size: 24.0,
+                            ),
+                            onPressed: () async {
+                              _model.mapoutPut =
+                                  await VenuesGroup.getAllVenuesMapCall.call(
+                                sortOrderType: _model.sortType,
+                                sortOrder: _model.sortOrder,
+                                limit: 30,
+                                pageNumber: 1,
+                                startIndex: 0,
+                                searchText: valueOrDefault<String>(
+                                  Uri.encodeComponent(_model.searchuery),
+                                  '*',
+                                ),
+                                filters: functions.venueFilterInputFunction(
+                                    valueOrDefault<String>(
+                                      functions.distanceSelectionConverter(
+                                          FFAppState().distance != ''
+                                              ? FFAppState().distance
+                                              : '25'),
+                                      '25',
+                                    ),
+                                    functions
+                                        .topFilterTypeSelectionConverter(
+                                            _model.venueAggregation.toList())
+                                        ?.unique((e) => e)
+                                        .toList(),
+                                    functions
+                                        .topFilterTypeSelectionConverter(_model
+                                            .activityTypeAggregation
+                                            .toList())
+                                        ?.unique((e) => e)
+                                        .toList(),
+                                    functions
+                                        .topFilterTypeSelectionConverter(_model
+                                            .sportstypeAggregation
+                                            .toList())
+                                        ?.unique((e) => e)
+                                        .toList(),
+                                    functions
+                                        .topFilterTypeSelectionConverter(_model
+                                            .pricefactorAggregation
+                                            .toList())
+                                        ?.unique((e) => e)
+                                        .toList(),
+                                    functions
+                                        .topFilterTypeSelectionConverter(
+                                            _model.rankingAggregation.toList())
+                                        ?.unique((e) => e)
+                                        .toList(),
+                                    functions
+                                        .topFilterTypeSelectionConverter(
+                                            _model.ageRangeAggregation.toList())
+                                        ?.unique((e) => e)
+                                        .toList(),
+                                    functions
+                                        .topFilterTypeSelectionConverter(
+                                            _model.townAggregation.toList())
+                                        ?.unique((e) => e)
+                                        .toList(),
+                                    functions
+                                        .topFilterTypeSelectionConverter(
+                                            _model.capacityAggregation.toList())
+                                        ?.unique((e) => e)
+                                        .toList(),
+                                    functions
+                                        .topFilterTypeSelectionConverter(_model
+                                            .demographicsAggregation
+                                            .toList())
+                                        ?.unique((e) => e)
+                                        .toList(),
+                                    _model.placeTypeSelectedId,
+                                    FFAppState().latitude,
+                                    FFAppState().longituade,
+                                    functions
+                                        .topFilterTypeSelectionConverter(
+                                            _model.activityCategoryAggregation.toList())
+                                        ?.unique((e) => e)
+                                        .toList()),
+                              );
+
+                              await showDialog(
+                                context: context,
+                                builder: (dialogContext) {
+                                  return Dialog(
+                                    elevation: 0,
+                                    insetPadding: EdgeInsets.zero,
+                                    backgroundColor: Colors.transparent,
+                                    alignment: AlignmentDirectional(0.0, 1.0)
+                                        .resolve(Directionality.of(context)),
+                                    child: WebViewAware(
                                       child: GestureDetector(
-                                        onTap: () => _model
-                                                .unfocusNode.canRequestFocus
-                                            ? FocusScope.of(context)
-                                                .requestFocus(
-                                                    _model.unfocusNode)
-                                            : FocusScope.of(context).unfocus(),
-                                        child: SizedBox(
+                                        onTap: () {
+                                          FocusScope.of(dialogContext)
+                                              .unfocus();
+                                          FocusManager.instance.primaryFocus
+                                              ?.unfocus();
+                                        },
+                                        child: Container(
                                           height: MediaQuery.sizeOf(context)
                                                   .height *
-                                              0.8,
+                                              1.0,
                                           child: MapVenueWidget(
-                                            filter:
-                                                functions.filterInputFunctionc(
-                                                    valueOrDefault<String>(
-                                                      functions.distanceSelectionConverter(
-                                                          _model.distanceSelectionOutput !=
-                                                                      null &&
-                                                                  _model.distanceSelectionOutput !=
-                                                                      ''
-                                                              ? _model
-                                                                  .distanceSelectionOutput!
-                                                              : '55'),
-                                                      '25',
-                                                    ),
-                                                    functions
-                                                        .venuTypeSelectionConverter(
-                                                            _model
-                                                                .venueAggregation
-                                                                .toList())
-                                                        ?.toList(),
-                                                    functions
-                                                        .venuTypeSelectionConverter(
-                                                            _model
-                                                                .activityTypeAggregation
-                                                                .toList())
-                                                        ?.toList(),
-                                                    functions
-                                                        .venuTypeSelectionConverter(
-                                                            _model
-                                                                .sportstypeAggregation
-                                                                .toList())
-                                                        ?.toList(),
-                                                    functions
-                                                        .venuTypeSelectionConverter(
-                                                            _model
-                                                                .pricefactorAggregation
-                                                                .toList())
-                                                        ?.toList(),
-                                                    functions
-                                                        .venuTypeSelectionConverter(
-                                                            _model
-                                                                .rankingAggregation
-                                                                .toList())
-                                                        ?.toList(),
-                                                    functions
-                                                        .venuTypeSelectionConverter(
-                                                            _model
-                                                                .ageRangeAggregation
-                                                                .toList())
-                                                        ?.toList(),
-                                                    functions
-                                                        .venuTypeSelectionConverter(
-                                                            _model
-                                                                .townAggregation
-                                                                .toList())
-                                                        ?.toList(),
-                                                    functions
-                                                        .venuTypeSelectionConverter(
-                                                            _model
-                                                                .capacityAggregation
-                                                                .toList())
-                                                        ?.toList(),
-                                                    functions
-                                                        .venuTypeSelectionConverter(
-                                                            _model
-                                                                .demographicsAggregation
-                                                                .toList())
-                                                        ?.toList(),
-                                                    _model
-                                                        .placeSelectionOutput),
-                                            searchQuery: _model.searchuery,
-                                            start: 0,
-                                            pageNumber: 1,
-                                            sortOrder:
-                                                _model.viewSelectionOutput !=
-                                                        null
-                                                    ? _model.viewSelectionOutput
-                                                        ?.sortSelection
-                                                    : 'desc',
-                                            sortOrderType:
-                                                valueOrDefault<String>(
-                                              functions.viewByConverter(
-                                                  _model.viewSelectionOutput !=
-                                                          null
-                                                      ? _model
-                                                          .viewSelectionOutput
-                                                          ?.viewSelection
-                                                      : 'Relevance'),
-                                              'Relevance',
+                                            detail: getJsonField(
+                                              (_model.mapoutPut?.jsonBody ??
+                                                  ''),
+                                              r'''$.details''',
                                             ),
+                                            data: functions
+                                                .mapLoadInformationForVenue(
+                                                    getJsonField(
+                                              (_model.mapoutPut?.jsonBody ??
+                                                  ''),
+                                              r'''$.details''',
+                                              true,
+                                            )),
                                           ),
                                         ),
                                       ),
-                                    );
-                                  },
-                                ).then((value) => setState(() {}));
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                      if (FFAppState().visibalMap &&
-                          responsiveVisibility(
-                            context: context,
-                            phone: false,
-                            tablet: false,
-                            tabletLandscape: false,
-                            desktop: false,
-                          ))
-                        Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(
-                              5.0, 5.0, 5.0, 5.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: FlutterFlowTheme.of(context)
-                                  .secondaryBackground,
-                              borderRadius: BorderRadius.circular(0.0),
-                              border: Border.all(
-                                color: FlutterFlowTheme.of(context)
-                                    .secondaryBackground,
-                              ),
-                            ),
-                            child: Stack(
-                              children: [
-                                Align(
-                                  alignment: const AlignmentDirectional(1.0, 1.0),
-                                  child: Padding(
-                                    padding: const EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 9.0, 9.0),
-                                    child: FlutterFlowIconButton(
-                                      borderColor: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                      borderRadius: 20.0,
-                                      borderWidth: 1.0,
-                                      buttonSize: 52.0,
-                                      fillColor: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                      icon: Icon(
-                                        Icons.view_list_rounded,
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryBackground,
-                                        size: 24.0,
-                                      ),
-                                      onPressed: () async {
-                                        _model.showMap = false;
-                                      },
                                     ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                                  );
+                                },
+                              );
+
+                              safeSetState(() {});
+                            },
                           ),
                         ),
-                      Align(
-                        alignment: const AlignmentDirectional(0.05, 0.74),
-                        child: Text(
-                          _model.searchFieldTextController.text,
-                          style:
-                              FlutterFlowTheme.of(context).bodyMedium.override(
-                                    fontFamily: 'Readex Pro',
-                                    letterSpacing: 0.0,
-                                  ),
-                        ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ),
-        );
-      },
+            Padding(
+              padding: EdgeInsetsDirectional.fromSTEB(8.0, 49.0, 8.0, 0.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FlutterFlowIconButton(
+                    buttonSize: 44.0,
+                    icon: Icon(
+                      Icons.arrow_back_rounded,
+                      color: FlutterFlowTheme.of(context).clbxBlack,
+                      size: 23.0,
+                    ),
+                    onPressed: () async {
+                      context.goNamed(HomePageWidget.routeName);
+                    },
+                  ),
+                  Flexible(
+                    child: Padding(
+                      padding:
+                          EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 0.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            FFLocalizations.of(context).getText(
+                              'wvoz2au3' /* Venues */,
+                            ),
+                            style: FlutterFlowTheme.of(context)
+                                .titleLarge
+                                .override(
+                                  fontFamily: FlutterFlowTheme.of(context)
+                                      .titleLargeFamily,
+                                  color: FlutterFlowTheme.of(context).clbxBlack,
+                                  letterSpacing: 0.0,
+                                  useGoogleFonts: !FlutterFlowTheme.of(context)
+                                      .titleLargeIsCustom,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Builder(
+                    builder: (context) => InkWell(
+                      splashColor: Colors.transparent,
+                      focusColor: Colors.transparent,
+                      hoverColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      onTap: () async {
+                        await showDialog(
+                          context: context,
+                          builder: (dialogContext) {
+                            return Dialog(
+                              elevation: 0,
+                              insetPadding: EdgeInsets.zero,
+                              backgroundColor: Colors.transparent,
+                              alignment: AlignmentDirectional(0.0, 0.0)
+                                  .resolve(Directionality.of(context)),
+                              child: WebViewAware(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    FocusScope.of(dialogContext).unfocus();
+                                    FocusManager.instance.primaryFocus
+                                        ?.unfocus();
+                                  },
+                                  child: VenueFilterCompWidget(
+                                    venueTypeSelected: _model.venueAggregation,
+                                    activityTypeSelected:
+                                        _model.activityTypeAggregation,
+                                    sportTypeSelected:
+                                        _model.sportstypeAggregation,
+                                    priceSelected:
+                                        _model.pricefactorAggregation,
+                                    rankSelected: _model.rankingAggregation,
+                                    ageSelected: _model.ageRangeAggregation,
+                                    townSelected: _model.townAggregation,
+                                    capacitySelected:
+                                        _model.capacityAggregation,
+                                    genderSelected:
+                                        _model.demographicsAggregation,
+                                    activityCatagorySelected:
+                                        _model.activityCategoryAggregation,
+                                    serchQuery: _model.searchuery,
+                                    placeActivityId: _model.placeTypeSelectedId,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ).then((value) =>
+                            safeSetState(() => _model.aggreSelection = value));
+
+                        if (_model.aggreSelection != null) {
+                          _model.venueAggregation = _model
+                              .aggreSelection!.venueTypeSelections
+                              .toList()
+                              .cast<String>();
+                          _model.activityTypeAggregation = _model
+                              .aggreSelection!.activityTypeSelections
+                              .toList()
+                              .cast<String>();
+                          _model.sportstypeAggregation = _model
+                              .aggreSelection!.sportTypeSelections
+                              .toList()
+                              .cast<String>();
+                          _model.pricefactorAggregation = _model
+                              .aggreSelection!.priceFactorSelections
+                              .toList()
+                              .cast<String>();
+                          _model.townAggregation = _model
+                              .aggreSelection!.townSelections
+                              .toList()
+                              .cast<String>();
+                          _model.activityCategoryAggregation = _model
+                              .aggreSelection!.activityTypeCategorySelections
+                              .toList()
+                              .cast<String>();
+                          _model.capacityAggregation = _model
+                              .aggreSelection!.capacitySelections
+                              .toList()
+                              .cast<String>();
+                          _model.rankingAggregation = _model
+                              .aggreSelection!.rankingSelections
+                              .toList()
+                              .cast<String>();
+                          _model.demographicsAggregation = _model
+                              .aggreSelection!.demographicsSelections
+                              .toList()
+                              .cast<String>();
+                          _model.ageRangeAggregation = _model
+                              .aggreSelection!.ageRangeSelections
+                              .toList()
+                              .cast<String>();
+                          safeSetState(() =>
+                              _model.venueListViewPagingController?.refresh());
+                          await _model.waitForOnePageForVenueListView();
+                        }
+
+                        safeSetState(() {});
+                      },
+                      child: Icon(
+                        Icons.filter_list_alt,
+                        color:
+                            FlutterFlowTheme.of(context).backgroundComponents,
+                        size: 35.0,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

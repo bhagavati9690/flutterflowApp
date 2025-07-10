@@ -1,0 +1,3 @@
+PermissionGroupNotification = "Send Notifiction on";
+NSContactsUsageDescription = "Allow Acess All Contact";
+NSLocationWhenInUseUsageDescription = "Allow Acess Location";

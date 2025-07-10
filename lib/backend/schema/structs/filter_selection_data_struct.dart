@@ -1,11 +1,14 @@
 // ignore_for_file: unnecessary_getters_setters
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '/backend/schema/util/firestore_util.dart';
 import '/backend/schema/util/schema_util.dart';
 
 import 'index.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
-class FilterSelectionDataStruct extends BaseStruct {
+class FilterSelectionDataStruct extends FFFirebaseStruct {
   FilterSelectionDataStruct({
     List<String>? venueTypeSelections,
     List<String>? activityTypeSelections,
@@ -17,6 +20,7 @@ class FilterSelectionDataStruct extends BaseStruct {
     List<String>? priceFactorSelections,
     List<String>? demographicsSelections,
     List<String>? rankingSelections,
+    FirestoreUtilData firestoreUtilData = const FirestoreUtilData(),
   })  : _venueTypeSelections = venueTypeSelections,
         _activityTypeSelections = activityTypeSelections,
         _sportTypeSelections = sportTypeSelections,
@@ -26,14 +30,18 @@ class FilterSelectionDataStruct extends BaseStruct {
         _townSelections = townSelections,
         _priceFactorSelections = priceFactorSelections,
         _demographicsSelections = demographicsSelections,
-        _rankingSelections = rankingSelections;
+        _rankingSelections = rankingSelections,
+        super(firestoreUtilData);
 
   // "venueTypeSelections" field.
   List<String>? _venueTypeSelections;
   List<String> get venueTypeSelections => _venueTypeSelections ?? const [];
   set venueTypeSelections(List<String>? val) => _venueTypeSelections = val;
-  void updateVenueTypeSelections(Function(List<String>) updateFn) =>
-      updateFn(_venueTypeSelections ??= []);
+
+  void updateVenueTypeSelections(Function(List<String>) updateFn) {
+    updateFn(_venueTypeSelections ??= []);
+  }
+
   bool hasVenueTypeSelections() => _venueTypeSelections != null;
 
   // "activityTypeSelections" field.
@@ -42,16 +50,22 @@ class FilterSelectionDataStruct extends BaseStruct {
       _activityTypeSelections ?? const [];
   set activityTypeSelections(List<String>? val) =>
       _activityTypeSelections = val;
-  void updateActivityTypeSelections(Function(List<String>) updateFn) =>
-      updateFn(_activityTypeSelections ??= []);
+
+  void updateActivityTypeSelections(Function(List<String>) updateFn) {
+    updateFn(_activityTypeSelections ??= []);
+  }
+
   bool hasActivityTypeSelections() => _activityTypeSelections != null;
 
   // "sportTypeSelections" field.
   List<String>? _sportTypeSelections;
   List<String> get sportTypeSelections => _sportTypeSelections ?? const [];
   set sportTypeSelections(List<String>? val) => _sportTypeSelections = val;
-  void updateSportTypeSelections(Function(List<String>) updateFn) =>
-      updateFn(_sportTypeSelections ??= []);
+
+  void updateSportTypeSelections(Function(List<String>) updateFn) {
+    updateFn(_sportTypeSelections ??= []);
+  }
+
   bool hasSportTypeSelections() => _sportTypeSelections != null;
 
   // "activityTypeCategorySelections" field.
@@ -60,8 +74,11 @@ class FilterSelectionDataStruct extends BaseStruct {
       _activityTypeCategorySelections ?? const [];
   set activityTypeCategorySelections(List<String>? val) =>
       _activityTypeCategorySelections = val;
-  void updateActivityTypeCategorySelections(Function(List<String>) updateFn) =>
-      updateFn(_activityTypeCategorySelections ??= []);
+
+  void updateActivityTypeCategorySelections(Function(List<String>) updateFn) {
+    updateFn(_activityTypeCategorySelections ??= []);
+  }
+
   bool hasActivityTypeCategorySelections() =>
       _activityTypeCategorySelections != null;
 
@@ -69,32 +86,44 @@ class FilterSelectionDataStruct extends BaseStruct {
   List<String>? _capacitySelections;
   List<String> get capacitySelections => _capacitySelections ?? const [];
   set capacitySelections(List<String>? val) => _capacitySelections = val;
-  void updateCapacitySelections(Function(List<String>) updateFn) =>
-      updateFn(_capacitySelections ??= []);
+
+  void updateCapacitySelections(Function(List<String>) updateFn) {
+    updateFn(_capacitySelections ??= []);
+  }
+
   bool hasCapacitySelections() => _capacitySelections != null;
 
   // "ageRangeSelections" field.
   List<String>? _ageRangeSelections;
   List<String> get ageRangeSelections => _ageRangeSelections ?? const [];
   set ageRangeSelections(List<String>? val) => _ageRangeSelections = val;
-  void updateAgeRangeSelections(Function(List<String>) updateFn) =>
-      updateFn(_ageRangeSelections ??= []);
+
+  void updateAgeRangeSelections(Function(List<String>) updateFn) {
+    updateFn(_ageRangeSelections ??= []);
+  }
+
   bool hasAgeRangeSelections() => _ageRangeSelections != null;
 
   // "townSelections" field.
   List<String>? _townSelections;
   List<String> get townSelections => _townSelections ?? const [];
   set townSelections(List<String>? val) => _townSelections = val;
-  void updateTownSelections(Function(List<String>) updateFn) =>
-      updateFn(_townSelections ??= []);
+
+  void updateTownSelections(Function(List<String>) updateFn) {
+    updateFn(_townSelections ??= []);
+  }
+
   bool hasTownSelections() => _townSelections != null;
 
   // "priceFactorSelections" field.
   List<String>? _priceFactorSelections;
   List<String> get priceFactorSelections => _priceFactorSelections ?? const [];
   set priceFactorSelections(List<String>? val) => _priceFactorSelections = val;
-  void updatePriceFactorSelections(Function(List<String>) updateFn) =>
-      updateFn(_priceFactorSelections ??= []);
+
+  void updatePriceFactorSelections(Function(List<String>) updateFn) {
+    updateFn(_priceFactorSelections ??= []);
+  }
+
   bool hasPriceFactorSelections() => _priceFactorSelections != null;
 
   // "demographicsSelections" field.
@@ -103,16 +132,22 @@ class FilterSelectionDataStruct extends BaseStruct {
       _demographicsSelections ?? const [];
   set demographicsSelections(List<String>? val) =>
       _demographicsSelections = val;
-  void updateDemographicsSelections(Function(List<String>) updateFn) =>
-      updateFn(_demographicsSelections ??= []);
+
+  void updateDemographicsSelections(Function(List<String>) updateFn) {
+    updateFn(_demographicsSelections ??= []);
+  }
+
   bool hasDemographicsSelections() => _demographicsSelections != null;
 
   // "rankingSelections" field.
   List<String>? _rankingSelections;
   List<String> get rankingSelections => _rankingSelections ?? const [];
   set rankingSelections(List<String>? val) => _rankingSelections = val;
-  void updateRankingSelections(Function(List<String>) updateFn) =>
-      updateFn(_rankingSelections ??= []);
+
+  void updateRankingSelections(Function(List<String>) updateFn) {
+    updateFn(_rankingSelections ??= []);
+  }
+
   bool hasRankingSelections() => _rankingSelections != null;
 
   static FilterSelectionDataStruct fromMap(Map<String, dynamic> data) =>
@@ -152,52 +187,52 @@ class FilterSelectionDataStruct extends BaseStruct {
         'venueTypeSelections': serializeParam(
           _venueTypeSelections,
           ParamType.String,
-          true,
+          isList: true,
         ),
         'activityTypeSelections': serializeParam(
           _activityTypeSelections,
           ParamType.String,
-          true,
+          isList: true,
         ),
         'sportTypeSelections': serializeParam(
           _sportTypeSelections,
           ParamType.String,
-          true,
+          isList: true,
         ),
         'activityTypeCategorySelections': serializeParam(
           _activityTypeCategorySelections,
           ParamType.String,
-          true,
+          isList: true,
         ),
         'capacitySelections': serializeParam(
           _capacitySelections,
           ParamType.String,
-          true,
+          isList: true,
         ),
         'ageRangeSelections': serializeParam(
           _ageRangeSelections,
           ParamType.String,
-          true,
+          isList: true,
         ),
         'townSelections': serializeParam(
           _townSelections,
           ParamType.String,
-          true,
+          isList: true,
         ),
         'priceFactorSelections': serializeParam(
           _priceFactorSelections,
           ParamType.String,
-          true,
+          isList: true,
         ),
         'demographicsSelections': serializeParam(
           _demographicsSelections,
           ParamType.String,
-          true,
+          isList: true,
         ),
         'rankingSelections': serializeParam(
           _rankingSelections,
           ParamType.String,
-          true,
+          isList: true,
         ),
       }.withoutNulls;
 
@@ -294,5 +329,82 @@ class FilterSelectionDataStruct extends BaseStruct {
       ]);
 }
 
-FilterSelectionDataStruct createFilterSelectionDataStruct() =>
-    FilterSelectionDataStruct();
+FilterSelectionDataStruct createFilterSelectionDataStruct({
+  Map<String, dynamic> fieldValues = const {},
+  bool clearUnsetFields = true,
+  bool create = false,
+  bool delete = false,
+}) =>
+    FilterSelectionDataStruct(
+      firestoreUtilData: FirestoreUtilData(
+        clearUnsetFields: clearUnsetFields,
+        create: create,
+        delete: delete,
+        fieldValues: fieldValues,
+      ),
+    );
+
+FilterSelectionDataStruct? updateFilterSelectionDataStruct(
+  FilterSelectionDataStruct? filterSelectionData, {
+  bool clearUnsetFields = true,
+  bool create = false,
+}) =>
+    filterSelectionData
+      ?..firestoreUtilData = FirestoreUtilData(
+        clearUnsetFields: clearUnsetFields,
+        create: create,
+      );
+
+void addFilterSelectionDataStructData(
+  Map<String, dynamic> firestoreData,
+  FilterSelectionDataStruct? filterSelectionData,
+  String fieldName, [
+  bool forFieldValue = false,
+]) {
+  firestoreData.remove(fieldName);
+  if (filterSelectionData == null) {
+    return;
+  }
+  if (filterSelectionData.firestoreUtilData.delete) {
+    firestoreData[fieldName] = FieldValue.delete();
+    return;
+  }
+  final clearFields =
+      !forFieldValue && filterSelectionData.firestoreUtilData.clearUnsetFields;
+  if (clearFields) {
+    firestoreData[fieldName] = <String, dynamic>{};
+  }
+  final filterSelectionDataData =
+      getFilterSelectionDataFirestoreData(filterSelectionData, forFieldValue);
+  final nestedData =
+      filterSelectionDataData.map((k, v) => MapEntry('$fieldName.$k', v));
+
+  final mergeFields =
+      filterSelectionData.firestoreUtilData.create || clearFields;
+  firestoreData
+      .addAll(mergeFields ? mergeNestedFields(nestedData) : nestedData);
+}
+
+Map<String, dynamic> getFilterSelectionDataFirestoreData(
+  FilterSelectionDataStruct? filterSelectionData, [
+  bool forFieldValue = false,
+]) {
+  if (filterSelectionData == null) {
+    return {};
+  }
+  final firestoreData = mapToFirestore(filterSelectionData.toMap());
+
+  // Add any Firestore field values
+  filterSelectionData.firestoreUtilData.fieldValues
+      .forEach((k, v) => firestoreData[k] = v);
+
+  return forFieldValue ? mergeNestedFields(firestoreData) : firestoreData;
+}
+
+List<Map<String, dynamic>> getFilterSelectionDataListFirestoreData(
+  List<FilterSelectionDataStruct>? filterSelectionDatas,
+) =>
+    filterSelectionDatas
+        ?.map((e) => getFilterSelectionDataFirestoreData(e, true))
+        .toList() ??
+    [];

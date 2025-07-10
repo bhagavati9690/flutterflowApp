@@ -1,4 +1,4 @@
-# Celebratix
+# clbxmobile
 
 A new Flutter project.
 

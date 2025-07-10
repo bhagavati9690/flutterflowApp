@@ -1,4 +1,4 @@
-package com.mycompany.celebratix
+package com.celebratix.clbxmobile
 
 import io.flutter.embedding.android.FlutterActivity
 

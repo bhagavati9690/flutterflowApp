@@ -1,5 +1,7 @@
 // Automatic FlutterFlow imports
+import '/backend/backend.dart';
 import '/backend/schema/structs/index.dart';
+import '/actions/actions.dart' as action_blocks;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom widgets
@@ -30,12 +32,10 @@ class CustomGeolocatorWidget extends StatefulWidget {
 }
 
 class _CustomGeolocatorWidgetState extends State<CustomGeolocatorWidget> {
-  static const String _kLocationServicesDisabledMessage =
-      'Location services are disabled.';
-  static const String _kPermissionDeniedMessage = 'Permission denied.';
-  static const String _kPermissionDeniedForeverMessage =
-      'Permission denied forever.';
-  static const String _kPermissionGrantedMessage = 'Permission granted.';
+  //static const String _kLocationServicesDisabledMessage = 'Location services are disabled.';
+  //static const String _kPermissionDeniedMessage = 'Permission denied.';
+  //static const String _kPermissionDeniedForeverMessage ='Permission denied forever.';
+  //static const String _kPermissionGrantedMessage = 'Permission granted.';
 
   final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
   final List<_PositionItem> _positionItems = <_PositionItem>[];

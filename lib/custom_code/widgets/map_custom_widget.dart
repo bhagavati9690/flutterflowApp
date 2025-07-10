@@ -1,5 +1,7 @@
 // Automatic FlutterFlow imports
+import '/backend/backend.dart';
 import '/backend/schema/structs/index.dart';
+import '/actions/actions.dart' as action_blocks;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom widgets
@@ -34,12 +36,12 @@ class MapCustomWidget extends StatefulWidget {
 
 class _MapCustomWidgetState extends State<MapCustomWidget> {
   List<Marker> allMarkers = [];
-  double iconSize = 24.0; // Define iconSize here
+  double iconSize = 40.0; // Define iconSize here
 
   @override
   void initState() {
     super.initState();
-    print("No ");
+    //print("No ");
     if (widget.markerData != null && widget.markerData!.isNotEmpty) {
       addMarkersToMap(widget.markerData!);
     }
@@ -49,7 +51,7 @@ class _MapCustomWidgetState extends State<MapCustomWidget> {
     print("No marker information extracted.");
     if (markerData != null) {
       for (MarkerInfoStruct markerInfo in markerData) {
-        print('Marker tapped!  ${markerInfo}');
+        // print('Marker tapped!  ${markerInfo}');
         final point = markerInfo.point;
         if (point != null) {
           final latitude = point.latitude;
@@ -57,23 +59,23 @@ class _MapCustomWidgetState extends State<MapCustomWidget> {
           if (latitude != null && longitude != null) {
             allMarkers.add(
               Marker(
-                point: l1.LatLng(latitude!, longitude!),
-                height: 12,
-                width: 12,
+                point: l1.LatLng(latitude, longitude),
+                height: 40,
+                width: 40,
                 alignment: Alignment(0, -12),
                 child: GestureDetector(
                   onTap: () {
                     // Handle marker tap here
-                    print('Marker tapped!');
+                    //print('Marker tapped!');
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
                         return Theme(
                           data: ThemeData(
-                            // Change the background color of the dialog here
-                            dialogBackgroundColor:
-                                Colors.white, // Example color
-                          ),
+                              // Change the background color of the dialog here
+                              dialogBackgroundColor:
+                                  Colors.white // Example color
+                              ),
                           child: AlertDialog(
                             title: Text(
                               '${markerInfo.name}',
@@ -83,14 +85,20 @@ class _MapCustomWidgetState extends State<MapCustomWidget> {
                                 fontSize: 18,
                               ),
                             ),
-                            content: Text(
-                              'Address: ${markerInfo.address}\n\nPrice: ${markerInfo.price}\n\nActivityType: ${markerInfo.activityType}\n\nActivityCategory: ${markerInfo.activityCategory}\n\nVenueType: ${markerInfo.venueType}',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 14,
-                              ),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (markerInfo.address != null)
+                                  Text("Address: ${markerInfo.address}"),
+                                if (markerInfo.price != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8.0),
+                                    child: Text("Price: ${markerInfo.price}"),
+                                  ),
+                              ],
                             ),
-                            actions: <Widget>[
+                            actions: [
                               TextButton(
                                 onPressed: () {
                                   Navigator.of(context).pop();
@@ -102,54 +110,15 @@ class _MapCustomWidgetState extends State<MapCustomWidget> {
                         );
                       },
                     );
-
-                    /* showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: Text(
-                            '${markerInfo.name}',
-                            style: TextStyle(
-                              color: Colors.blue,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                          ),
-                          content: Text(
-                            'Address: ${markerInfo.address}\n\nPrice: ${markerInfo.price}\n\nActivityType: ${markerInfo.activityType}\n\nActivityCategory: ${markerInfo.activityCategory}\n\nVenueType: ${markerInfo.venueType}',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 14,
-                            ),
-                          ),
-                          actions: <Widget>[
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: Text('Close'),
-                            ),
-                          ],
-                        );
-                      },
-                    );*/
                   },
-/*                  onTapCancel: () {
-                    setState(() {
-                      // Reset the icon size when tap is cancelled
-                      iconSize = 24.0;
-                    });
-                  },
-                  onTapUp: (_) {
-                    setState(() {
-                      // Reset the icon size when tap is released
-                      iconSize = 24.0;
-                    });
-                  },*/
-                  child: Icon(
-                    Icons.location_pin,
-                    color: Colors.red,
-                    size: iconSize,
+                  child: Container(
+                    padding:
+                        EdgeInsets.all(10), // ⬅️ Increase for bigger tap area
+                    child: Icon(
+                      Icons.location_pin,
+                      color: Colors.red,
+                      size: iconSize,
+                    ),
                   ),
                 ),
               ),
@@ -170,16 +139,15 @@ class _MapCustomWidgetState extends State<MapCustomWidget> {
       final firstMarkerPoint = firstMarker.point;
       if (firstMarkerPoint != null) {
         defaultCenter =
-            l1.LatLng(firstMarkerPoint.latitude!, firstMarkerPoint.longitude!);
+            l1.LatLng(firstMarkerPoint.latitude, firstMarkerPoint.longitude);
       }
     }
     return FlutterMap(
       options: MapOptions(
-        /*center: l1.LatLng(
-            widget.startingPoint.latitude, widget.startingPoint.longitude),
-        zoom: widget.startingZoom,*/
-        center: defaultCenter,
-        zoom: widget.startingZoom,
+        initialCenter: defaultCenter, // Use MapOptions for center
+
+        initialZoom:
+            widget.startingZoom ?? 13.0, // Provide a fallback zoom level
       ),
       children: [
         TileLayer(

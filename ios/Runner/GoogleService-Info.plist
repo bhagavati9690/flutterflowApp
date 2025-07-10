@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyDzEfU85Coe45KEV4VV77BdPU4buc7qxg4</string>
+	<key>GCM_SENDER_ID</key>
+	<string>843864992614</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.celebratix.clbxmobile</string>
+	<key>PROJECT_ID</key>
+	<string>clbxmobileipbased</string>
+	<key>STORAGE_BUCKET</key>
+	<string>clbxmobileipbased.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:843864992614:ios:e47a18533e019c383ab6a7</string>
+</dict>
+</plist>
